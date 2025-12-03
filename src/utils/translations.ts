@@ -124,6 +124,21 @@ interface Translations {
   loading: string;
   updatedNow: string;
   updatedMinutesAgo: string;
+
+  // Navigation
+  home: string;
+  forecast: string;
+  favorites: string;
+  
+  // Favorites Screen
+  favoriteLocations: string;
+  noFavorites: string;
+  addCurrentLocation: string;
+  tapToAddFavorite: string;
+  
+  // Settings descriptions
+  appInfo: string;
+  poweredBy: string;
 }
 
 const tr: Translations = {
@@ -235,6 +250,21 @@ const tr: Translations = {
   loading: 'Hava durumu yükleniyor...',
   updatedNow: 'Şimdi güncellendi',
   updatedMinutesAgo: 'dakika önce',
+
+  // Navigation
+  home: 'Ana Sayfa',
+  forecast: 'Tahmin',
+  favorites: 'Favoriler',
+  
+  // Favorites Screen
+  favoriteLocations: 'Favori Konumlar',
+  noFavorites: 'Henüz favori konum eklemediniz',
+  addCurrentLocation: 'Mevcut konumu ekle',
+  tapToAddFavorite: 'Mevcut konumunuzu favorilere eklemek için yukarıdaki butona dokunun',
+  
+  // Settings descriptions
+  appInfo: 'Uygulama Bilgisi',
+  poweredBy: 'Open-Meteo API ile desteklenmektedir',
 };
 
 const en: Translations = {
@@ -346,6 +376,21 @@ const en: Translations = {
   loading: 'Loading weather...',
   updatedNow: 'Updated now',
   updatedMinutesAgo: 'minutes ago',
+
+  // Navigation
+  home: 'Home',
+  forecast: 'Forecast',
+  favorites: 'Favorites',
+  
+  // Favorites Screen
+  favoriteLocations: 'Favorite Locations',
+  noFavorites: 'No favorite locations yet',
+  addCurrentLocation: 'Add current location',
+  tapToAddFavorite: 'Tap the button above to add your current location to favorites',
+  
+  // Settings descriptions
+  appInfo: 'App Info',
+  poweredBy: 'Powered by Open-Meteo API',
 };
 
 const translations: Record<Language, Translations> = {

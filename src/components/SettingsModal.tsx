@@ -232,7 +232,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {/* App Info */}
             <View style={[styles.section, styles.infoSection]}>
               <Text style={[styles.infoText, { color: theme.textSecondary }]}>
-                WeatherThen v1.0.0
+                WeatherThen v0.1.0
               </Text>
               <Text style={[styles.infoText, { color: theme.textSecondary }]}>
                 Powered by Open-Meteo API

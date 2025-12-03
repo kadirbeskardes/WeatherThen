@@ -7,8 +7,6 @@ import { getTranslations } from '../utils/translations';
 interface HeaderProps {
   onSearchPress: () => void;
   onLocationPress: () => void;
-  onSettingsPress: () => void;
-  onFavoritesPress: () => void;
   theme: ThemeColors;
   lastUpdated?: Date;
   language: Language;
@@ -17,8 +15,6 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   onSearchPress,
   onLocationPress,
-  onSettingsPress,
-  onFavoritesPress,
   theme,
   lastUpdated,
   language,
@@ -36,17 +32,9 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <View style={styles.container}>
-      <View style={styles.leftButtons}>
-        <TouchableOpacity onPress={onLocationPress} style={styles.button}>
-          <Text style={styles.buttonIcon}>📍</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={onFavoritesPress} style={[styles.button, styles.settingsButton]}>
-          <Text style={styles.buttonIcon}>⭐</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={onSettingsPress} style={[styles.button, styles.settingsButton]}>
-          <Text style={styles.buttonIcon}>⚙️</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity onPress={onLocationPress} style={styles.button}>
+        <Text style={styles.buttonIcon}>📍</Text>
+      </TouchableOpacity>
 
       {lastUpdated && (
         <View style={styles.updateInfo}>
@@ -70,10 +58,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 10,
-  },
-  leftButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    paddingBottom: 5,
   },
   button: {
     width: 44,
@@ -82,9 +67,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
-  },
-  settingsButton: {
-    marginLeft: 8,
   },
   buttonIcon: {
     fontSize: 20,
