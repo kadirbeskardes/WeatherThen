@@ -47,8 +47,42 @@ export function getWeatherInfo(code: number, isDay: boolean = true): WeatherInfo
   };
 }
 
-export function getWeatherDescription(code: number): string {
-  return weatherCodeMap[code]?.description || 'Bilinmiyor';
+export function getWeatherDescription(code: number, language: Language = 'tr'): string {
+  const descriptions: Record<number, { tr: string; en: string }> = {
+    0: { tr: 'Açık', en: 'Clear' },
+    1: { tr: 'Çoğunlukla Açık', en: 'Mostly Clear' },
+    2: { tr: 'Parçalı Bulutlu', en: 'Partly Cloudy' },
+    3: { tr: 'Kapalı', en: 'Overcast' },
+    45: { tr: 'Sisli', en: 'Foggy' },
+    48: { tr: 'Kırağılı Sis', en: 'Rime Fog' },
+    51: { tr: 'Hafif Çisenti', en: 'Light Drizzle' },
+    53: { tr: 'Orta Çisenti', en: 'Moderate Drizzle' },
+    55: { tr: 'Yoğun Çisenti', en: 'Dense Drizzle' },
+    56: { tr: 'Dondurucu Çisenti', en: 'Freezing Drizzle' },
+    57: { tr: 'Yoğun Dondurucu Çisenti', en: 'Heavy Freezing Drizzle' },
+    61: { tr: 'Hafif Yağmur', en: 'Light Rain' },
+    63: { tr: 'Orta Yağmur', en: 'Moderate Rain' },
+    65: { tr: 'Şiddetli Yağmur', en: 'Heavy Rain' },
+    66: { tr: 'Dondurucu Yağmur', en: 'Freezing Rain' },
+    67: { tr: 'Yoğun Dondurucu Yağmur', en: 'Heavy Freezing Rain' },
+    71: { tr: 'Hafif Kar', en: 'Light Snow' },
+    73: { tr: 'Orta Kar', en: 'Moderate Snow' },
+    75: { tr: 'Yoğun Kar', en: 'Heavy Snow' },
+    77: { tr: 'Kar Taneleri', en: 'Snow Grains' },
+    80: { tr: 'Hafif Sağanak', en: 'Light Showers' },
+    81: { tr: 'Orta Sağanak', en: 'Moderate Showers' },
+    82: { tr: 'Şiddetli Sağanak', en: 'Heavy Showers' },
+    85: { tr: 'Hafif Kar Sağanağı', en: 'Light Snow Showers' },
+    86: { tr: 'Yoğun Kar Sağanağı', en: 'Heavy Snow Showers' },
+    95: { tr: 'Gök Gürültülü Fırtına', en: 'Thunderstorm' },
+    96: { tr: 'Hafif Dolu ile Fırtına', en: 'Thunderstorm with Light Hail' },
+    99: { tr: 'Yoğun Dolu ile Fırtına', en: 'Thunderstorm with Heavy Hail' },
+  };
+  return descriptions[code]?.[language] || (language === 'tr' ? 'Bilinmiyor' : 'Unknown');
+}
+
+export function getWeatherEmoji(code: number, isDay: boolean = true): string {
+  return getWeatherIcon(code, isDay);
 }
 
 export function getWeatherIcon(code: number, isDay: boolean = true): string {

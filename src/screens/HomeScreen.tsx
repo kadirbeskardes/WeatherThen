@@ -5,6 +5,10 @@ import {
   HourlyForecast,
   WeatherTips,
   WeatherDetailsGrid,
+  WeatherAlerts,
+  FeelsLikeExplainer,
+  ComfortIndex,
+  WeatherShare,
 } from '../components';
 import { WeatherData } from '../types/weather';
 import { ThemeColors } from '../utils/themeUtils';
@@ -57,11 +61,32 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         getWindSpeedSymbol={getWindSpeedSymbol}
       />
 
+      {/* Weather Alerts - Show first if there are any */}
+      <WeatherAlerts
+        weatherData={weatherData}
+        theme={theme}
+        settings={settings}
+      />
+
       <HourlyForecast
         hourlyData={weatherData.hourly}
         theme={theme}
         settings={settings}
         convertTemperature={convertTemperature}
+      />
+
+      <FeelsLikeExplainer
+        weatherData={weatherData}
+        theme={theme}
+        settings={settings}
+        convertTemperature={convertTemperature}
+        getTemperatureSymbol={getTemperatureSymbol}
+      />
+
+      <ComfortIndex
+        hourlyData={weatherData.hourly}
+        theme={theme}
+        settings={settings}
       />
 
       <WeatherTips
@@ -74,6 +99,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         current={weatherData.current}
         theme={theme}
         settings={settings}
+      />
+
+      <WeatherShare
+        weatherData={weatherData}
+        theme={theme}
+        settings={settings}
+        convertTemperature={convertTemperature}
+        getTemperatureSymbol={getTemperatureSymbol}
       />
     </ScrollView>
   );

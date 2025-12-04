@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { memo, useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { DailyWeather } from '../types/weather';
 import { getWeatherIcon, formatDayName, formatTime } from '../utils/weatherUtils';
 import { ThemeColors } from '../utils/themeUtils';
@@ -14,75 +14,104 @@ interface DailyForecastProps {
   convertTemperature: (celsius: number) => number;
 }
 
-export const DailyForecast: React.FC<DailyForecastProps> = ({ 
+interface DayCardProps {
+  day: DailyWeather;
+  theme: ThemeColors;
+  settings: AppSettings;
+  onPress?: () => void;
+  convertTemperature: (celsius: number) => number;
+}
+
+const DayCard = memo<DayCardProps>(({ day, theme, settings, onPress, convertTemperature }) => {
+  const dayName = useMemo(() => formatDayName(day.date, settings.language), [day.date, settings.language]);
+  const sunrise = useMemo(() => formatTime(day.sunrise, settings.language, settings.hourFormat24), [day.sunrise, settings.language, settings.hourFormat24]);
+  const sunset = useMemo(() => formatTime(day.sunset, settings.language, settings.hourFormat24), [day.sunset, settings.language, settings.hourFormat24]);
+  const icon = useMemo(() => getWeatherIcon(day.weatherCode, true), [day.weatherCode]);
+  const maxTemp = useMemo(() => convertTemperature(day.temperatureMax), [day.temperatureMax, convertTemperature]);
+  const minTemp = useMemo(() => convertTemperature(day.temperatureMin), [day.temperatureMin, convertTemperature]);
+  const tempBarWidth = useMemo(() => `${((day.temperatureMax - day.temperatureMin) / 40) * 100}%`, [day.temperatureMax, day.temperatureMin]);
+
+  return (
+    <TouchableOpacity
+      style={[styles.dayCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View style={styles.dayInfo}>
+        <Text style={[styles.dayName, { color: theme.text }]}>{dayName}</Text>
+        <View style={styles.sunTimes}>
+          <Text style={[styles.sunTime, { color: theme.textSecondary }]}>🌅 {sunrise}</Text>
+          <Text style={[styles.sunTime, { color: theme.textSecondary }]}>🌇 {sunset}</Text>
+        </View>
+      </View>
+
+      <View style={styles.weatherInfo}>
+        <Text style={styles.icon}>{icon}</Text>
+        {day.precipitationProbability > 0 && (
+          <Text style={[styles.precip, { color: '#64B5F6' }]}>
+            💧{day.precipitationProbability}%
+          </Text>
+        )}
+      </View>
+
+      <View style={styles.tempContainer}>
+        <Text style={[styles.tempMax, { color: theme.text }]}>{maxTemp}°</Text>
+        <View style={[styles.tempBar, { backgroundColor: theme.secondary }]}>
+          <View style={[styles.tempBarFill, { width: tempBarWidth, backgroundColor: theme.accent }]} />
+        </View>
+        <Text style={[styles.tempMin, { color: theme.textSecondary }]}>{minTemp}°</Text>
+      </View>
+    </TouchableOpacity>
+  );
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.day.date === nextProps.day.date &&
+    prevProps.day.temperatureMax === nextProps.day.temperatureMax &&
+    prevProps.day.temperatureMin === nextProps.day.temperatureMin &&
+    prevProps.day.weatherCode === nextProps.day.weatherCode &&
+    prevProps.settings.language === nextProps.settings.language &&
+    prevProps.settings.temperatureUnit === nextProps.settings.temperatureUnit
+  );
+});
+
+const DailyForecastComponent: React.FC<DailyForecastProps> = ({ 
   dailyData, 
   theme,
   onDayPress,
   settings,
   convertTemperature,
 }) => {
-  const t = getTranslations(settings.language);
+  const t = useMemo(() => getTranslations(settings.language), [settings.language]);
   
+  const renderItem = useCallback(({ item }: { item: DailyWeather }) => (
+    <DayCard
+      day={item}
+      theme={theme}
+      settings={settings}
+      onPress={() => onDayPress?.(item)}
+      convertTemperature={convertTemperature}
+    />
+  ), [theme, settings, onDayPress, convertTemperature]);
+
+  const keyExtractor = useCallback((item: DailyWeather) => item.date, []);
+
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: theme.text }]}>{t.dailyForecast}</Text>
-      {dailyData.map((day, index) => (
-        <TouchableOpacity
-          key={day.date}
-          style={[
-            styles.dayCard,
-            { backgroundColor: theme.card, borderColor: theme.cardBorder },
-          ]}
-          onPress={() => onDayPress?.(day)}
-          activeOpacity={0.7}
-        >
-          <View style={styles.dayInfo}>
-            <Text style={[styles.dayName, { color: theme.text }]}>
-              {formatDayName(day.date, settings.language)}
-            </Text>
-            <View style={styles.sunTimes}>
-              <Text style={[styles.sunTime, { color: theme.textSecondary }]}>
-                🌅 {formatTime(day.sunrise, settings.language, settings.hourFormat24)}
-              </Text>
-              <Text style={[styles.sunTime, { color: theme.textSecondary }]}>
-                🌇 {formatTime(day.sunset, settings.language, settings.hourFormat24)}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.weatherInfo}>
-            <Text style={styles.icon}>{getWeatherIcon(day.weatherCode, true)}</Text>
-            {day.precipitationProbability > 0 && (
-              <Text style={[styles.precip, { color: '#64B5F6' }]}>
-                💧{day.precipitationProbability}%
-              </Text>
-            )}
-          </View>
-
-          <View style={styles.tempContainer}>
-            <Text style={[styles.tempMax, { color: theme.text }]}>
-              {convertTemperature(day.temperatureMax)}°
-            </Text>
-            <View style={[styles.tempBar, { backgroundColor: theme.secondary }]}>
-              <View 
-                style={[
-                  styles.tempBarFill, 
-                  { 
-                    width: `${((day.temperatureMax - day.temperatureMin) / 40) * 100}%`,
-                    backgroundColor: theme.accent 
-                  }
-                ]} 
-              />
-            </View>
-            <Text style={[styles.tempMin, { color: theme.textSecondary }]}>
-              {convertTemperature(day.temperatureMin)}°
-            </Text>
-          </View>
-        </TouchableOpacity>
-      ))}
+      <FlatList
+        data={dailyData}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        scrollEnabled={false}
+        initialNumToRender={7}
+        maxToRenderPerBatch={5}
+        removeClippedSubviews={true}
+      />
     </View>
   );
 };
+
+export const DailyForecast = memo(DailyForecastComponent);
 
 const styles = StyleSheet.create({
   container: {

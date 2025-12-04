@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, memo, useMemo } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
 import { WeatherCondition } from '../types/weather';
 
@@ -9,53 +9,111 @@ interface WeatherAnimationProps {
 
 const { width, height } = Dimensions.get('window');
 
-export const WeatherAnimation: React.FC<WeatherAnimationProps> = ({
+// Reduce particle count for better performance
+const RAIN_PARTICLE_COUNT = 10;
+const SNOW_PARTICLE_COUNT = 12;
+
+const WeatherAnimationComponent: React.FC<WeatherAnimationProps> = ({
   condition,
   isDay,
 }) => {
-  const animations = useRef<Animated.Value[]>([]);
+  const animationsRef = useRef<Animated.Value[]>([]);
+  const sunPulseRef = useRef(new Animated.Value(0));
+  const cloudAnimRef = useRef(new Animated.Value(0));
   
-  // Create animation values for particles
-  if (animations.current.length === 0) {
-    for (let i = 0; i < 20; i++) {
-      animations.current.push(new Animated.Value(0));
+  // Initialize animations only once
+  if (animationsRef.current.length === 0) {
+    const particleCount = condition === 'snow' ? SNOW_PARTICLE_COUNT : RAIN_PARTICLE_COUNT;
+    for (let i = 0; i < particleCount; i++) {
+      animationsRef.current.push(new Animated.Value(0));
     }
   }
 
-  useEffect(() => {
-    const animateParticles = () => {
-      const animationConfigs = animations.current.map((anim, index) => {
-        return Animated.loop(
-          Animated.sequence([
-            Animated.timing(anim, {
-              toValue: 1,
-              duration: 3000 + Math.random() * 2000,
-              useNativeDriver: true,
-              delay: index * 150,
-            }),
-            Animated.timing(anim, {
-              toValue: 0,
-              duration: 0,
-              useNativeDriver: true,
-            }),
-          ])
-        );
-      });
-      
-      Animated.parallel(animationConfigs).start();
-    };
-
-    if (condition === 'rain' || condition === 'drizzle' || condition === 'snow') {
-      animateParticles();
-    }
-
-    return () => {
-      animations.current.forEach(anim => anim.stopAnimation());
-    };
+  // Memoize whether animation should run
+  const shouldAnimate = useMemo(() => {
+    return ['rain', 'drizzle', 'snow', 'thunderstorm'].includes(condition);
   }, [condition]);
 
-  const renderRainDrops = () => {
-    return animations.current.slice(0, 15).map((anim, index) => {
+  const shouldShowSun = useMemo(() => {
+    return condition === 'clear' && isDay;
+  }, [condition, isDay]);
+
+  const shouldShowClouds = useMemo(() => {
+    return condition === 'cloudy' || condition === 'partly-cloudy';
+  }, [condition]);
+
+  useEffect(() => {
+    if (!shouldAnimate) return;
+
+    const animations = animationsRef.current.map((anim, index) => {
+      return Animated.loop(
+        Animated.sequence([
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 2500 + Math.random() * 1500,
+            useNativeDriver: true,
+            delay: index * 200,
+          }),
+          Animated.timing(anim, {
+            toValue: 0,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+    });
+    
+    Animated.parallel(animations).start();
+
+    return () => {
+      animationsRef.current.forEach(anim => anim.stopAnimation());
+    };
+  }, [shouldAnimate]);
+
+  // Sun animation
+  useEffect(() => {
+    if (!shouldShowSun) return;
+
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(sunPulseRef.current, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(sunPulseRef.current, {
+          toValue: 0,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    anim.start();
+
+    return () => anim.stop();
+  }, [shouldShowSun]);
+
+  // Cloud animation
+  useEffect(() => {
+    if (!shouldShowClouds) return;
+
+    const anim = Animated.loop(
+      Animated.timing(cloudAnimRef.current, {
+        toValue: 1,
+        duration: 25000,
+        useNativeDriver: true,
+      })
+    );
+    anim.start();
+
+    return () => anim.stop();
+  }, [shouldShowClouds]);
+
+  // Memoized rain drops
+  const rainDrops = useMemo(() => {
+    if (!shouldAnimate || condition === 'snow') return null;
+    
+    return animationsRef.current.slice(0, RAIN_PARTICLE_COUNT).map((anim, index) => {
       const translateY = anim.interpolate({
         inputRange: [0, 1],
         outputRange: [-20, height],
@@ -63,7 +121,7 @@ export const WeatherAnimation: React.FC<WeatherAnimationProps> = ({
       
       const opacity = anim.interpolate({
         inputRange: [0, 0.1, 0.9, 1],
-        outputRange: [0, 0.6, 0.6, 0],
+        outputRange: [0, 0.5, 0.5, 0],
       });
 
       return (
@@ -72,7 +130,7 @@ export const WeatherAnimation: React.FC<WeatherAnimationProps> = ({
           style={[
             styles.rainDrop,
             {
-              left: (index * (width / 15)) + Math.random() * 20,
+              left: (index * (width / RAIN_PARTICLE_COUNT)) + (index % 3) * 10,
               transform: [{ translateY }],
               opacity,
             },
@@ -80,10 +138,13 @@ export const WeatherAnimation: React.FC<WeatherAnimationProps> = ({
         />
       );
     });
-  };
+  }, [shouldAnimate, condition]);
 
-  const renderSnowFlakes = () => {
-    return animations.current.map((anim, index) => {
+  // Memoized snow flakes
+  const snowFlakes = useMemo(() => {
+    if (!shouldAnimate || condition !== 'snow') return null;
+    
+    return animationsRef.current.map((anim, index) => {
       const translateY = anim.interpolate({
         inputRange: [0, 1],
         outputRange: [-20, height],
@@ -91,17 +152,12 @@ export const WeatherAnimation: React.FC<WeatherAnimationProps> = ({
       
       const translateX = anim.interpolate({
         inputRange: [0, 0.5, 1],
-        outputRange: [0, 15, 0],
+        outputRange: [0, 10, 0],
       });
       
       const opacity = anim.interpolate({
         inputRange: [0, 0.1, 0.9, 1],
-        outputRange: [0, 0.8, 0.8, 0],
-      });
-      
-      const rotate = anim.interpolate({
-        inputRange: [0, 1],
-        outputRange: ['0deg', '360deg'],
+        outputRange: [0, 0.7, 0.7, 0],
       });
 
       return (
@@ -110,10 +166,10 @@ export const WeatherAnimation: React.FC<WeatherAnimationProps> = ({
           style={[
             styles.snowFlake,
             {
-              left: (index * (width / 20)) + Math.random() * 10,
-              transform: [{ translateY }, { translateX }, { rotate }],
+              left: (index * (width / SNOW_PARTICLE_COUNT)),
+              transform: [{ translateY }, { translateX }],
               opacity,
-              fontSize: 10 + Math.random() * 10,
+              fontSize: 12 + (index % 3) * 4,
             },
           ]}
         >
@@ -121,36 +177,20 @@ export const WeatherAnimation: React.FC<WeatherAnimationProps> = ({
         </Animated.Text>
       );
     });
-  };
+  }, [shouldAnimate, condition]);
 
-  const renderSunRays = () => {
-    const pulseAnim = useRef(new Animated.Value(0)).current;
-    
-    useEffect(() => {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 0,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
-    }, []);
+  // Memoized sun
+  const sunElement = useMemo(() => {
+    if (!shouldShowSun) return null;
 
-    const scale = pulseAnim.interpolate({
+    const scale = sunPulseRef.current.interpolate({
       inputRange: [0, 1],
-      outputRange: [1, 1.1],
+      outputRange: [1, 1.08],
     });
 
-    const opacity = pulseAnim.interpolate({
+    const opacity = sunPulseRef.current.interpolate({
       inputRange: [0, 1],
-      outputRange: [0.3, 0.5],
+      outputRange: [0.25, 0.4],
     });
 
     return (
@@ -160,27 +200,17 @@ export const WeatherAnimation: React.FC<WeatherAnimationProps> = ({
           {
             transform: [{ scale }],
             opacity,
-            backgroundColor: '#FFD700',
           },
         ]}
       />
     );
-  };
+  }, [shouldShowSun]);
 
-  const renderClouds = () => {
-    const cloudAnim = useRef(new Animated.Value(0)).current;
-    
-    useEffect(() => {
-      Animated.loop(
-        Animated.timing(cloudAnim, {
-          toValue: 1,
-          duration: 20000,
-          useNativeDriver: true,
-        })
-      ).start();
-    }, []);
+  // Memoized clouds
+  const cloudElement = useMemo(() => {
+    if (!shouldShowClouds) return null;
 
-    const translateX = cloudAnim.interpolate({
+    const translateX = cloudAnimRef.current.interpolate({
       inputRange: [0, 1],
       outputRange: [-100, width + 100],
     });
@@ -189,25 +219,27 @@ export const WeatherAnimation: React.FC<WeatherAnimationProps> = ({
       <Animated.Text
         style={[
           styles.cloud,
-          {
-            transform: [{ translateX }],
-          },
+          { transform: [{ translateX }] },
         ]}
       >
         ☁️
       </Animated.Text>
     );
-  };
+  }, [shouldShowClouds]);
 
   return (
     <View style={styles.container} pointerEvents="none">
-      {(condition === 'rain' || condition === 'drizzle' || condition === 'thunderstorm') && renderRainDrops()}
-      {condition === 'snow' && renderSnowFlakes()}
-      {condition === 'clear' && isDay && renderSunRays()}
-      {(condition === 'cloudy' || condition === 'partly-cloudy') && renderClouds()}
+      {rainDrops}
+      {snowFlakes}
+      {sunElement}
+      {cloudElement}
     </View>
   );
 };
+
+export const WeatherAnimation = memo(WeatherAnimationComponent, (prev, next) => {
+  return prev.condition === next.condition && prev.isDay === next.isDay;
+});
 
 const styles = StyleSheet.create({
   container: {

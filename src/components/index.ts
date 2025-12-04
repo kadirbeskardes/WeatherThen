@@ -19,3 +19,11 @@ export { WeeklySummary } from './WeeklySummary';
 export { ClothingSuggestion } from './ClothingSuggestion';
 export { FavoritesModal } from './FavoritesModal';
 export { WeatherComparison } from './WeatherComparison';
+
+// New components
+export { MoonPhase } from './MoonPhase';
+export { WeatherShare } from './WeatherShare';
+export { FeelsLikeExplainer } from './FeelsLikeExplainer';
+export { ComfortIndex } from './ComfortIndex';
+export { WeatherAlerts } from './WeatherAlerts';
+export { WeekAtGlance } from './WeekAtGlance';

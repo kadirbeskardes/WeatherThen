@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemeColors } from '../utils/themeUtils';
 import { Language } from '../types/settings';
@@ -12,23 +12,23 @@ interface HeaderProps {
   language: Language;
 }
 
-export const Header: React.FC<HeaderProps> = ({
+const HeaderComponent: React.FC<HeaderProps> = ({
   onSearchPress,
   onLocationPress,
   theme,
   lastUpdated,
   language,
 }) => {
-  const t = getTranslations(language);
+  const t = useMemo(() => getTranslations(language), [language]);
   
-  const formatUpdateTime = () => {
+  const updateTimeText = useMemo(() => {
     if (!lastUpdated) return '';
     const now = new Date();
     const diff = Math.floor((now.getTime() - lastUpdated.getTime()) / 60000);
     if (diff < 1) return t.updatedNow;
     if (diff < 60) return `${diff} ${t.updatedMinutesAgo}`;
     return lastUpdated.toLocaleTimeString(language === 'tr' ? 'tr-TR' : 'en-US', { hour: '2-digit', minute: '2-digit' });
-  };
+  }, [lastUpdated, t, language]);
 
   return (
     <View style={styles.container}>
@@ -39,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
       {lastUpdated && (
         <View style={styles.updateInfo}>
           <Text style={[styles.updateText, { color: theme.textSecondary }]}>
-            {formatUpdateTime()}
+            {updateTimeText}
           </Text>
         </View>
       )}
@@ -50,6 +50,14 @@ export const Header: React.FC<HeaderProps> = ({
     </View>
   );
 };
+
+export const Header = memo(HeaderComponent, (prev, next) => {
+  return (
+    prev.lastUpdated === next.lastUpdated &&
+    prev.language === next.language &&
+    prev.theme.textSecondary === next.theme.textSecondary
+  );
+});
 
 const styles = StyleSheet.create({
   container: {

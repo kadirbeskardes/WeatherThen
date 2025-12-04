@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { memo, useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { HourlyWeather } from '../types/weather';
 import { getWeatherIcon, formatHour } from '../utils/weatherUtils';
 import { ThemeColors } from '../utils/themeUtils';
@@ -13,54 +13,98 @@ interface HourlyForecastProps {
   convertTemperature: (celsius: number) => number;
 }
 
-export const HourlyForecast: React.FC<HourlyForecastProps> = ({ 
+interface HourCardProps {
+  hour: HourlyWeather;
+  theme: ThemeColors;
+  settings: AppSettings;
+  convertTemperature: (celsius: number) => number;
+}
+
+// Memoized hour card component
+const HourCard = memo<HourCardProps>(({ hour, theme, settings, convertTemperature }) => {
+  const temp = useMemo(() => convertTemperature(hour.temperature), [hour.temperature, convertTemperature]);
+  const icon = useMemo(() => getWeatherIcon(hour.weatherCode, hour.isDay), [hour.weatherCode, hour.isDay]);
+  const time = useMemo(() => formatHour(hour.time, settings.language, settings.hourFormat24), [hour.time, settings.language, settings.hourFormat24]);
+
+  return (
+    <View style={[styles.hourCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+      <Text style={[styles.time, { color: theme.textSecondary }]}>{time}</Text>
+      <Text style={styles.icon}>{icon}</Text>
+      <Text style={[styles.temp, { color: theme.text }]}>{temp}°</Text>
+      {hour.precipitationProbability > 0 && (
+        <View style={styles.precipContainer}>
+          <Text style={styles.precipIcon}>💧</Text>
+          <Text style={[styles.precip, { color: '#64B5F6' }]}>
+            {hour.precipitationProbability}%
+          </Text>
+        </View>
+      )}
+      <View style={styles.windContainer}>
+        <Text style={[styles.wind, { color: theme.textSecondary }]}>
+          💨 {hour.windSpeed}
+        </Text>
+      </View>
+    </View>
+  );
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.hour.time === nextProps.hour.time &&
+    prevProps.hour.temperature === nextProps.hour.temperature &&
+    prevProps.hour.weatherCode === nextProps.hour.weatherCode &&
+    prevProps.settings.language === nextProps.settings.language &&
+    prevProps.settings.temperatureUnit === nextProps.settings.temperatureUnit
+  );
+});
+
+const HourlyForecastComponent: React.FC<HourlyForecastProps> = ({ 
   hourlyData, 
   theme,
   settings,
   convertTemperature,
 }) => {
-  const t = getTranslations(settings.language);
+  const t = useMemo(() => getTranslations(settings.language), [settings.language]);
   
+  // Limit data to 24 hours
+  const displayData = useMemo(() => hourlyData.slice(0, 24), [hourlyData]);
+  
+  const renderItem = useCallback(({ item }: { item: HourlyWeather }) => (
+    <HourCard 
+      hour={item} 
+      theme={theme} 
+      settings={settings} 
+      convertTemperature={convertTemperature}
+    />
+  ), [theme, settings, convertTemperature]);
+
+  const keyExtractor = useCallback((item: HourlyWeather, index: number) => 
+    `${item.time}-${index}`, []
+  );
+
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: theme.text }]}>{t.hourlyForecast}</Text>
-      <ScrollView
+      <FlatList
         horizontal
+        data={displayData}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
-      >
-        {hourlyData.slice(0, 24).map((hour, index) => (
-          <View
-            key={hour.time + index}
-            style={[
-              styles.hourCard,
-              { backgroundColor: theme.card, borderColor: theme.cardBorder },
-            ]}
-          >
-            <Text style={[styles.time, { color: theme.textSecondary }]}>
-              {formatHour(hour.time, settings.language, settings.hourFormat24)}
-            </Text>
-            <Text style={styles.icon}>{getWeatherIcon(hour.weatherCode, hour.isDay)}</Text>
-            <Text style={[styles.temp, { color: theme.text }]}>{convertTemperature(hour.temperature)}°</Text>
-            {hour.precipitationProbability > 0 && (
-              <View style={styles.precipContainer}>
-                <Text style={styles.precipIcon}>💧</Text>
-                <Text style={[styles.precip, { color: '#64B5F6' }]}>
-                  {hour.precipitationProbability}%
-                </Text>
-              </View>
-            )}
-            <View style={styles.windContainer}>
-              <Text style={[styles.wind, { color: theme.textSecondary }]}>
-                💨 {hour.windSpeed}
-              </Text>
-            </View>
-          </View>
-        ))}
-      </ScrollView>
+        initialNumToRender={8}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={true}
+        getItemLayout={(_, index) => ({
+          length: 90,
+          offset: 90 * index,
+          index,
+        })}
+      />
     </View>
   );
 };
+
+export const HourlyForecast = memo(HourlyForecastComponent);
 
 const styles = StyleSheet.create({
   container: {

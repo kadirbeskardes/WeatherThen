@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { CurrentWeather } from '../types/weather';
-import { getWeatherInfo, getWindDirection, getUVIndexLevel } from '../utils/weatherUtils';
+import { getWeatherInfo, getUVIndexLevel } from '../utils/weatherUtils';
 import { ThemeColors } from '../utils/themeUtils';
 import { AppSettings } from '../types/settings';
 import { getTranslations } from '../utils/translations';
@@ -17,7 +17,7 @@ interface CurrentWeatherDisplayProps {
   getWindSpeedSymbol: () => string;
 }
 
-export const CurrentWeatherDisplay: React.FC<CurrentWeatherDisplayProps> = ({
+const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
   weather,
   locationName,
   theme,
@@ -27,14 +27,17 @@ export const CurrentWeatherDisplay: React.FC<CurrentWeatherDisplayProps> = ({
   getTemperatureSymbol,
   getWindSpeedSymbol,
 }) => {
-  const t = getTranslations(settings.language);
-  const weatherInfo = getWeatherInfo(weather.weatherCode, weather.isDay);
-  const uvInfo = getUVIndexLevel(weather.uvIndex, settings.language);
-  const windDirections = [t.windN, t.windNE, t.windE, t.windSE, t.windS, t.windSW, t.windW, t.windNW];
-  const windDir = windDirections[Math.round(weather.windDirection / 45) % 8];
+  const t = useMemo(() => getTranslations(settings.language), [settings.language]);
+  const weatherInfo = useMemo(() => getWeatherInfo(weather.weatherCode, weather.isDay), [weather.weatherCode, weather.isDay]);
+  const uvInfo = useMemo(() => getUVIndexLevel(weather.uvIndex, settings.language), [weather.uvIndex, settings.language]);
+  
+  const windDir = useMemo(() => {
+    const windDirections = [t.windN, t.windNE, t.windE, t.windSE, t.windS, t.windSW, t.windW, t.windNW];
+    return windDirections[Math.round(weather.windDirection / 45) % 8];
+  }, [weather.windDirection, t]);
 
   // Get weather description based on language
-  const getLocalizedWeatherDescription = (code: number): string => {
+  const weatherDescription = useMemo(() => {
     const descMap: Record<number, keyof typeof t> = {
       0: 'clear', 1: 'mostlyClear', 2: 'partlyCloudy', 3: 'overcast',
       45: 'fog', 48: 'rimeFog',
@@ -47,9 +50,15 @@ export const CurrentWeatherDisplay: React.FC<CurrentWeatherDisplayProps> = ({
       85: 'lightSnowShowers', 86: 'heavySnowShowers',
       95: 'thunderstorm', 96: 'thunderstormLightHail', 99: 'thunderstormHeavyHail',
     };
-    const key = descMap[code] || 'clear';
+    const key = descMap[weather.weatherCode] || 'clear';
     return t[key];
-  };
+  }, [weather.weatherCode, t]);
+
+  // Memoize converted values
+  const displayTemp = useMemo(() => convertTemperature(weather.temperature), [weather.temperature, convertTemperature]);
+  const displayFeelsLike = useMemo(() => convertTemperature(weather.apparentTemperature), [weather.apparentTemperature, convertTemperature]);
+  const displayWind = useMemo(() => convertWindSpeed(weather.windSpeed), [weather.windSpeed, convertWindSpeed]);
+  const windSymbol = useMemo(() => getWindSpeedSymbol(), [getWindSpeedSymbol]);
 
   return (
     <View style={styles.container}>
@@ -58,22 +67,22 @@ export const CurrentWeatherDisplay: React.FC<CurrentWeatherDisplayProps> = ({
       <View style={styles.mainInfo}>
         <Text style={styles.icon}>{weatherInfo.icon}</Text>
         <Text style={[styles.temperature, { color: theme.text }]}>
-          {convertTemperature(weather.temperature)}°
+          {displayTemp}°
         </Text>
       </View>
       
       <Text style={[styles.description, { color: theme.text }]}>
-        {getLocalizedWeatherDescription(weather.weatherCode)}
+        {weatherDescription}
       </Text>
       
       <Text style={[styles.feelsLike, { color: theme.textSecondary }]}>
-        {t.feelsLike}: {convertTemperature(weather.apparentTemperature)}°
+        {t.feelsLike}: {displayFeelsLike}°
       </Text>
 
       <View style={styles.statsContainer}>
         <View style={[styles.statCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
           <Text style={styles.statIcon}>💨</Text>
-          <Text style={[styles.statValue, { color: theme.text }]}>{convertWindSpeed(weather.windSpeed)} {getWindSpeedSymbol()}</Text>
+          <Text style={[styles.statValue, { color: theme.text }]}>{displayWind} {windSymbol}</Text>
           <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
             {t.wind} {windDir}
           </Text>
@@ -122,6 +131,21 @@ export const CurrentWeatherDisplay: React.FC<CurrentWeatherDisplayProps> = ({
     </View>
   );
 };
+
+// Use React.memo with custom comparison for better performance
+export const CurrentWeatherDisplay = memo(CurrentWeatherDisplayComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.weather.temperature === nextProps.weather.temperature &&
+    prevProps.weather.weatherCode === nextProps.weather.weatherCode &&
+    prevProps.weather.humidity === nextProps.weather.humidity &&
+    prevProps.weather.windSpeed === nextProps.weather.windSpeed &&
+    prevProps.weather.uvIndex === nextProps.weather.uvIndex &&
+    prevProps.locationName === nextProps.locationName &&
+    prevProps.settings.language === nextProps.settings.language &&
+    prevProps.settings.temperatureUnit === nextProps.settings.temperatureUnit &&
+    prevProps.settings.windSpeedUnit === nextProps.settings.windSpeedUnit
+  );
+});
 
 const styles = StyleSheet.create({
   container: {

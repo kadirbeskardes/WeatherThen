@@ -122,6 +122,7 @@ export const TabNavigator: React.FC<TabNavigatorProps> = ({
             onRefresh={onRefresh}
             convertTemperature={convertTemperature}
             convertWindSpeed={convertWindSpeed}
+            getTemperatureSymbol={getTemperatureSymbol}
           />
         )}
       </Tab.Screen>

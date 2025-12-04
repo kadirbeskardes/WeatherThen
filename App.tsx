@@ -1,26 +1,24 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import {
   StyleSheet,
   StatusBar,
   View,
   Platform,
+  InteractionManager,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { NavigationContainer } from '@react-navigation/native';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {
-  LocationSearch,
   Header,
   LoadingScreen,
   ErrorScreen,
-  WeatherAnimation,
 } from './src/components';
 
 import { TabNavigator } from './src/navigation';
-import { useFavorites } from './src/context/FavoritesContext';
 import { WeatherData, GeocodingResult, LocationData } from './src/types/weather';
 import { fetchWeatherData, reverseGeocode } from './src/services/weatherApi';
 import { getWeatherCondition } from './src/utils/weatherUtils';
@@ -28,8 +26,17 @@ import { getThemeColors, getGradientColors } from './src/utils/themeUtils';
 import { SettingsProvider, useSettings } from './src/context/SettingsContext';
 import { FavoritesProvider } from './src/context/FavoritesContext';
 import { getTranslations } from './src/utils/translations';
+import { cacheManager } from './src/utils/cache';
 
 const STORAGE_KEY = '@WeatherThen:lastLocation';
+
+// Lazy load heavy components
+const LocationSearch = lazy(() => 
+  import('./src/components/LocationSearch').then(module => ({ default: module.LocationSearch }))
+);
+const WeatherAnimation = lazy(() => 
+  import('./src/components/WeatherAnimation').then(module => ({ default: module.WeatherAnimation }))
+);
 
 function WeatherApp() {
   const { settings, convertTemperature, convertWindSpeed, getTemperatureSymbol, getWindSpeedSymbol } = useSettings();
@@ -41,6 +48,7 @@ function WeatherApp() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | undefined>();
   const [searchVisible, setSearchVisible] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   // Calculate theme values - all hooks must be called unconditionally
   const condition = useMemo(() => {
@@ -57,9 +65,9 @@ function WeatherApp() {
   const theme = useMemo(() => getThemeColors(condition, isDay), [condition, isDay]);
   const gradientColors = useMemo(() => getGradientColors(condition, isDay), [condition, isDay]);
 
-  const loadWeatherForLocation = useCallback(async (location: LocationData) => {
+  const loadWeatherForLocation = useCallback(async (location: LocationData, forceRefresh = false) => {
     try {
-      const data = await fetchWeatherData(location.latitude, location.longitude);
+      const data = await fetchWeatherData(location.latitude, location.longitude, forceRefresh);
       setWeatherData({
         ...data,
         location,
@@ -67,8 +75,8 @@ function WeatherApp() {
       setLastUpdated(new Date());
       setError(null);
 
-      // Save location to storage
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(location));
+      // Save location to storage (don't await - fire and forget)
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(location)).catch(() => {});
     } catch (err) {
       console.error('Weather fetch error:', err);
       setError(t.errorWeatherFetch);
@@ -77,11 +85,21 @@ function WeatherApp() {
 
   const loadCurrentLocation = useCallback(async () => {
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
+      // Start location permission request
+      const permissionPromise = Location.requestForegroundPermissionsAsync();
+      
+      // Preload cache in parallel
+      const cachePromise = cacheManager.preload();
+      
+      // Load saved location in parallel
+      const savedLocationPromise = AsyncStorage.getItem(STORAGE_KEY);
+      
+      // Wait for permission
+      const { status } = await permissionPromise;
+      await cachePromise;
       
       if (status !== 'granted') {
-        // Try to load saved location
-        const savedLocation = await AsyncStorage.getItem(STORAGE_KEY);
+        const savedLocation = await savedLocationPromise;
         if (savedLocation) {
           const location = JSON.parse(savedLocation);
           await loadWeatherForLocation(location);
@@ -97,23 +115,48 @@ function WeatherApp() {
         return;
       }
 
+      // Get position with lower accuracy for faster response
       const position = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
+        accuracy: Location.Accuracy.Low, // Faster than Balanced
       });
 
-      const locationName = await reverseGeocode(
+      // Start weather fetch immediately, geocode in parallel
+      const weatherPromise = fetchWeatherData(
+        position.coords.latitude, 
+        position.coords.longitude
+      );
+      
+      const geocodePromise = reverseGeocode(
         position.coords.latitude,
         position.coords.longitude
       );
 
-      await loadWeatherForLocation({
+      // Wait for both in parallel
+      const [weatherResult, locationName] = await Promise.all([
+        weatherPromise,
+        geocodePromise,
+      ]);
+
+      setWeatherData({
+        ...weatherResult,
+        location: {
+          name: locationName,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        },
+      });
+      setLastUpdated(new Date());
+      setError(null);
+
+      // Save location (fire and forget)
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({
         name: locationName,
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
-      });
+      })).catch(() => {});
+
     } catch (err) {
       console.error('Location error:', err);
-      // Try to load saved location on error
       const savedLocation = await AsyncStorage.getItem(STORAGE_KEY);
       if (savedLocation) {
         const location = JSON.parse(savedLocation);
@@ -128,6 +171,11 @@ function WeatherApp() {
     setLoading(true);
     await loadCurrentLocation();
     setLoading(false);
+    
+    // Mark as ready after interactions complete
+    InteractionManager.runAfterInteractions(() => {
+      setIsReady(true);
+    });
   }, [loadCurrentLocation]);
 
   useEffect(() => {
@@ -137,7 +185,7 @@ function WeatherApp() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     if (weatherData?.location) {
-      await loadWeatherForLocation(weatherData.location);
+      await loadWeatherForLocation(weatherData.location, true); // Force refresh
     } else {
       await loadCurrentLocation();
     }
@@ -162,6 +210,14 @@ function WeatherApp() {
     setLoading(false);
   }, [loadCurrentLocation]);
 
+  const handleSearchClose = useCallback(() => {
+    setSearchVisible(false);
+  }, []);
+
+  const handleSearchOpen = useCallback(() => {
+    setSearchVisible(true);
+  }, []);
+
   if (loading) {
     return <LoadingScreen />;
   }
@@ -183,12 +239,16 @@ function WeatherApp() {
           translucent
         />
         
-        {/* Animated weather background */}
-        <WeatherAnimation condition={condition} isDay={isDay} />
+        {/* Lazy load animation - only after ready */}
+        {isReady && (
+          <Suspense fallback={null}>
+            <WeatherAnimation condition={condition} isDay={isDay} />
+          </Suspense>
+        )}
         
         <View style={styles.safeArea}>
           <Header
-            onSearchPress={() => setSearchVisible(true)}
+            onSearchPress={handleSearchOpen}
             onLocationPress={handleLocationButtonPress}
             theme={theme}
             lastUpdated={lastUpdated}
@@ -209,13 +269,17 @@ function WeatherApp() {
           />
         </View>
 
-        <LocationSearch
-          visible={searchVisible}
-          onClose={() => setSearchVisible(false)}
-          onLocationSelect={handleLocationSelect}
-          theme={theme}
-          language={settings.language}
-        />
+        {searchVisible && (
+          <Suspense fallback={null}>
+            <LocationSearch
+              visible={searchVisible}
+              onClose={handleSearchClose}
+              onLocationSelect={handleLocationSelect}
+              theme={theme}
+              language={settings.language}
+            />
+          </Suspense>
+        )}
       </LinearGradient>
     </NavigationContainer>
   );

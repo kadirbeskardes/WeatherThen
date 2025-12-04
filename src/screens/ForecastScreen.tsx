@@ -7,6 +7,9 @@ import {
   PrecipitationChart,
   WeeklySummary,
   SunPath,
+  MoonPhase,
+  WeekAtGlance,
+  AirQualityCard,
 } from '../components';
 import { WeatherData, DailyWeather } from '../types/weather';
 import { ThemeColors } from '../utils/themeUtils';
@@ -20,6 +23,7 @@ interface ForecastScreenProps {
   onRefresh: () => void;
   convertTemperature: (celsius: number) => number;
   convertWindSpeed: (kmh: number) => number;
+  getTemperatureSymbol: () => string;
 }
 
 export const ForecastScreen: React.FC<ForecastScreenProps> = ({
@@ -30,6 +34,7 @@ export const ForecastScreen: React.FC<ForecastScreenProps> = ({
   onRefresh,
   convertTemperature,
   convertWindSpeed,
+  getTemperatureSymbol,
 }) => {
   const [selectedDay, setSelectedDay] = useState<DailyWeather | null>(null);
 
@@ -47,6 +52,14 @@ export const ForecastScreen: React.FC<ForecastScreenProps> = ({
           />
         }
       >
+        <WeekAtGlance
+          daily={weatherData.daily}
+          theme={theme}
+          settings={settings}
+          convertTemperature={convertTemperature}
+          getTemperatureSymbol={getTemperatureSymbol}
+        />
+
         <WeeklySummary
           daily={weatherData.daily}
           theme={theme}
@@ -63,6 +76,18 @@ export const ForecastScreen: React.FC<ForecastScreenProps> = ({
           daily={weatherData.daily[0]}
           theme={theme}
           settings={settings}
+        />
+
+        <MoonPhase
+          theme={theme}
+          settings={settings}
+        />
+
+        <AirQualityCard
+          theme={theme}
+          settings={settings}
+          latitude={weatherData.location.latitude}
+          longitude={weatherData.location.longitude}
         />
 
         <PrecipitationChart

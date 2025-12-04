@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppSettings, defaultSettings, TemperatureUnit, WindSpeedUnit, Language, ThemeMode } from '../types/settings';
 
@@ -36,24 +36,28 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setIsLoaded(true);
   };
 
-  const updateSettings = async (newSettings: Partial<AppSettings>) => {
+  const updateSettings = useCallback(async (newSettings: Partial<AppSettings>) => {
     try {
-      const updated = { ...settings, ...newSettings };
-      setSettings(updated);
-      await AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(updated));
+      setSettings(prev => {
+        const updated = { ...prev, ...newSettings };
+        // Fire and forget - don't block UI
+        AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(updated)).catch(console.error);
+        return updated;
+      });
     } catch (error) {
       console.error('Failed to save settings:', error);
     }
-  };
+  }, []);
 
-  const convertTemperature = (celsius: number): number => {
+  // Memoize conversion functions based on settings
+  const convertTemperature = useCallback((celsius: number): number => {
     if (settings.temperatureUnit === 'fahrenheit') {
       return Math.round((celsius * 9/5) + 32);
     }
     return celsius;
-  };
+  }, [settings.temperatureUnit]);
 
-  const convertWindSpeed = (kmh: number): number => {
+  const convertWindSpeed = useCallback((kmh: number): number => {
     switch (settings.windSpeedUnit) {
       case 'mph':
         return Math.round(kmh * 0.621371);
@@ -62,13 +66,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       default:
         return kmh;
     }
-  };
+  }, [settings.windSpeedUnit]);
 
-  const getTemperatureSymbol = (): string => {
+  const getTemperatureSymbol = useCallback((): string => {
     return settings.temperatureUnit === 'fahrenheit' ? '°F' : '°C';
-  };
+  }, [settings.temperatureUnit]);
 
-  const getWindSpeedSymbol = (): string => {
+  const getWindSpeedSymbol = useCallback((): string => {
     switch (settings.windSpeedUnit) {
       case 'mph':
         return 'mph';
@@ -77,23 +81,24 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       default:
         return 'km/s';
     }
-  };
+  }, [settings.windSpeedUnit]);
+
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    settings,
+    updateSettings,
+    convertTemperature,
+    convertWindSpeed,
+    getTemperatureSymbol,
+    getWindSpeedSymbol,
+  }), [settings, updateSettings, convertTemperature, convertWindSpeed, getTemperatureSymbol, getWindSpeedSymbol]);
 
   if (!isLoaded) {
     return null;
   }
 
   return (
-    <SettingsContext.Provider
-      value={{
-        settings,
-        updateSettings,
-        convertTemperature,
-        convertWindSpeed,
-        getTemperatureSymbol,
-        getWindSpeedSymbol,
-      }}
-    >
+    <SettingsContext.Provider value={contextValue}>
       {children}
     </SettingsContext.Provider>
   );

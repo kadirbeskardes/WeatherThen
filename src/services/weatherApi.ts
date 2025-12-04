@@ -1,9 +1,36 @@
 import { WeatherData, CurrentWeather, HourlyWeather, DailyWeather, GeocodingResult } from '../types/weather';
+import { cacheManager, CACHE_KEYS, CACHE_DURATION } from '../utils/cache';
 
 const BASE_URL = 'https://api.open-meteo.com/v1';
 const GEOCODING_URL = 'https://geocoding-api.open-meteo.com/v1';
 
-export async function fetchWeatherData(latitude: number, longitude: number): Promise<Omit<WeatherData, 'location'>> {
+// Cache key generator for weather data
+const getWeatherCacheKey = (lat: number, lon: number): string => {
+  // Round coordinates to reduce cache fragmentation
+  const roundedLat = Math.round(lat * 100) / 100;
+  const roundedLon = Math.round(lon * 100) / 100;
+  return `${CACHE_KEYS.WEATHER}:${roundedLat}:${roundedLon}`;
+};
+
+export async function fetchWeatherData(
+  latitude: number, 
+  longitude: number,
+  forceRefresh: boolean = false
+): Promise<Omit<WeatherData, 'location'>> {
+  const cacheKey = getWeatherCacheKey(latitude, longitude);
+  
+  // Check cache first (unless force refresh)
+  if (!forceRefresh) {
+    const cached = await cacheManager.getIfValid<Omit<WeatherData, 'location'>>(
+      cacheKey, 
+      CACHE_DURATION.WEATHER
+    );
+    if (cached) {
+      console.log('Using cached weather data');
+      return cached;
+    }
+  }
+
   const params = new URLSearchParams({
     latitude: latitude.toString(),
     longitude: longitude.toString(),
@@ -45,19 +72,44 @@ export async function fetchWeatherData(latitude: number, longitude: number): Pro
     forecast_days: '14'
   });
 
-  const response = await fetch(`${BASE_URL}/forecast?${params}`);
-  
-  if (!response.ok) {
-    throw new Error('Weather data fetch failed');
-  }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-  const data = await response.json();
-  
-  return {
-    current: parseCurrentWeather(data.current),
-    hourly: parseHourlyWeather(data.hourly),
-    daily: parseDailyWeather(data.daily)
-  };
+  try {
+    const response = await fetch(`${BASE_URL}/forecast?${params}`, {
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      throw new Error('Weather data fetch failed');
+    }
+
+    const data = await response.json();
+    
+    const result = {
+      current: parseCurrentWeather(data.current),
+      hourly: parseHourlyWeather(data.hourly),
+      daily: parseDailyWeather(data.daily)
+    };
+
+    // Cache the result
+    await cacheManager.set(cacheKey, result);
+    
+    return result;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    
+    // If network fails, try to return stale cache
+    const staleCache = await cacheManager.get<Omit<WeatherData, 'location'>>(cacheKey);
+    if (staleCache) {
+      console.log('Network failed, using stale cache');
+      return staleCache;
+    }
+    
+    throw error;
+  }
 }
 
 function parseCurrentWeather(data: any): CurrentWeather {
@@ -146,23 +198,43 @@ export async function searchLocation(query: string): Promise<GeocodingResult[]> 
   }));
 }
 
+// Geocoding cache
+const geocodeCache = new Map<string, string>();
+
 export async function reverseGeocode(latitude: number, longitude: number): Promise<string> {
-  // Open-Meteo doesn't have reverse geocoding, so we'll use a simple approach
-  // In production, you might want to use a different service
+  // Round coordinates for cache key
+  const cacheKey = `${Math.round(latitude * 100)}:${Math.round(longitude * 100)}`;
+  
+  // Check memory cache
+  if (geocodeCache.has(cacheKey)) {
+    return geocodeCache.get(cacheKey)!;
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=tr`
+      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=tr`,
+      { signal: controller.signal }
     );
+    
+    clearTimeout(timeoutId);
     
     if (response.ok) {
       const data = await response.json();
-      return data.address?.city || 
+      const locationName = data.address?.city || 
              data.address?.town || 
              data.address?.village || 
              data.address?.municipality ||
              'Bilinmeyen Konum';
+      
+      // Cache the result
+      geocodeCache.set(cacheKey, locationName);
+      return locationName;
     }
   } catch (error) {
+    clearTimeout(timeoutId);
     console.log('Reverse geocoding failed:', error);
   }
   
