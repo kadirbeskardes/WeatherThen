@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,16 @@ import {
   ScrollView,
   Switch,
   TouchableOpacity,
+  Modal,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ThemeColors } from '../utils/themeUtils';
 import { useSettings } from '../context/SettingsContext';
+import { usePremium } from '../context/PremiumContext';
 import { getTranslations } from '../utils/translations';
 import { TemperatureUnit, WindSpeedUnit, Language, ThemeMode } from '../types/settings';
+import { WidgetPreviewScreen } from './WidgetPreviewScreen';
+import { PremiumPaywall, PremiumBadge } from '../components';
 
 interface SettingsScreenProps {
   theme: ThemeColors;
@@ -47,7 +52,10 @@ const OptionButton: React.FC<OptionButtonProps> = ({ label, selected, onPress, t
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ theme }) => {
   const { settings, updateSettings } = useSettings();
+  const { isPremium, premiumStatus } = usePremium();
   const t = getTranslations(settings.language);
+  const [showWidgetPreview, setShowWidgetPreview] = useState(false);
+  const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
 
   const handleTemperatureChange = (unit: TemperatureUnit) => {
     updateSettings({ temperatureUnit: unit });
@@ -80,6 +88,58 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ theme }) => {
       showsVerticalScrollIndicator={false}
     >
       <Text style={[styles.title, { color: theme.text }]}>⚙️ {t.settings}</Text>
+
+      {/* Premium Section */}
+      {isPremium ? (
+        <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+          <LinearGradient
+            colors={['#FFD700', '#FFA500']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.premiumActiveCard}
+          >
+            <View style={styles.premiumActiveContent}>
+              <Text style={styles.premiumActiveIcon}>👑</Text>
+              <View style={styles.premiumActiveInfo}>
+                <Text style={styles.premiumActiveTitle}>{t.premiumMember}</Text>
+                <Text style={styles.premiumActiveSubtitle}>
+                  {premiumStatus.expiresAt 
+                    ? `${t.premiumExpires}: ${premiumStatus.expiresAt.toLocaleDateString(settings.language === 'tr' ? 'tr-TR' : 'en-US')}`
+                    : settings.language === 'tr' ? 'Ömür boyu erişim' : 'Lifetime access'}
+                </Text>
+              </View>
+            </View>
+          </LinearGradient>
+        </View>
+      ) : (
+        <TouchableOpacity 
+          style={[styles.section, { backgroundColor: theme.card, borderColor: theme.cardBorder, overflow: 'hidden' }]}
+          onPress={() => setShowPremiumPaywall(true)}
+          activeOpacity={0.8}
+        >
+          <LinearGradient
+            colors={['#FFD700', '#FFA500']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.premiumBanner}
+          >
+            <View style={styles.premiumBannerContent}>
+              <Text style={styles.premiumBannerIcon}>👑</Text>
+              <View style={styles.premiumBannerInfo}>
+                <Text style={styles.premiumBannerTitle}>
+                  {t.upgradeToPremium}
+                </Text>
+                <Text style={styles.premiumBannerSubtitle}>
+                  {t.unlockAllFeatures}
+                </Text>
+              </View>
+              <View style={styles.premiumBannerArrow}>
+                <Text style={styles.premiumArrowText}>›</Text>
+              </View>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+      )}
 
       {/* Language */}
       <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
@@ -231,15 +291,56 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ theme }) => {
         </View>
       </View>
 
+      {/* Widgets */}
+      <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+        <TouchableOpacity 
+          style={styles.widgetButton}
+          onPress={() => setShowWidgetPreview(true)}
+        >
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionIcon}>📱</Text>
+            <View style={styles.widgetInfo}>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                {settings.language === 'tr' ? 'Widget\'lar' : 'Widgets'}
+              </Text>
+              <Text style={[styles.widgetDesc, { color: theme.textSecondary }]}>
+                {settings.language === 'tr' 
+                  ? 'Ana ekran widget\'larını önizle' 
+                  : 'Preview home screen widgets'}
+              </Text>
+            </View>
+          </View>
+          <Text style={[styles.chevron, { color: theme.textSecondary }]}>›</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* App Info */}
       <View style={[styles.infoSection, { borderTopColor: theme.cardBorder }]}>
         <Text style={styles.appIcon}>🌤️</Text>
         <Text style={[styles.appName, { color: theme.text }]}>WeatherThen</Text>
-        <Text style={[styles.appVersion, { color: theme.textSecondary }]}>v0.2.0</Text>
+        <Text style={[styles.appVersion, { color: theme.textSecondary }]}>v0.3.0</Text>
         <Text style={[styles.poweredBy, { color: theme.textSecondary }]}>
           {t.poweredBy}
         </Text>
       </View>
+
+      {/* Widget Preview Modal */}
+      <Modal
+        visible={showWidgetPreview}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowWidgetPreview(false)}
+      >
+        <WidgetPreviewScreen onClose={() => setShowWidgetPreview(false)} />
+      </Modal>
+
+      {/* Premium Paywall Modal */}
+      <PremiumPaywall
+        visible={showPremiumPaywall}
+        onClose={() => setShowPremiumPaywall(false)}
+        theme={theme}
+        language={settings.language}
+      />
     </ScrollView>
   );
 };
@@ -319,5 +420,86 @@ const styles = StyleSheet.create({
   },
   poweredBy: {
     fontSize: 12,
+  },
+  widgetButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  widgetInfo: {
+    flex: 1,
+  },
+  widgetDesc: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  chevron: {
+    fontSize: 24,
+    fontWeight: '300',
+  },
+  // Premium styles
+  premiumBanner: {
+    margin: -16,
+    padding: 16,
+  },
+  premiumBannerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  premiumBannerIcon: {
+    fontSize: 32,
+    marginRight: 14,
+  },
+  premiumBannerInfo: {
+    flex: 1,
+  },
+  premiumBannerTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  premiumBannerSubtitle: {
+    fontSize: 13,
+    color: '#4A4A4A',
+    marginTop: 2,
+  },
+  premiumBannerArrow: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#1A1A1A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  premiumArrowText: {
+    color: '#FFD700',
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  premiumActiveCard: {
+    margin: -16,
+    padding: 16,
+    borderRadius: 16,
+  },
+  premiumActiveContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  premiumActiveIcon: {
+    fontSize: 32,
+    marginRight: 14,
+  },
+  premiumActiveInfo: {
+    flex: 1,
+  },
+  premiumActiveTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  premiumActiveSubtitle: {
+    fontSize: 13,
+    color: '#4A4A4A',
+    marginTop: 2,
   },
 });

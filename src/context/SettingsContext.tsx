@@ -28,10 +28,33 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       const stored = await AsyncStorage.getItem(SETTINGS_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        setSettings({ ...defaultSettings, ...parsed });
+        
+        // Validate parsed data
+        const validatedSettings: AppSettings = {
+          ...defaultSettings,
+          temperatureUnit: ['celsius', 'fahrenheit'].includes(parsed.temperatureUnit) 
+            ? parsed.temperatureUnit 
+            : defaultSettings.temperatureUnit,
+          windSpeedUnit: ['kmh', 'mph', 'ms'].includes(parsed.windSpeedUnit)
+            ? parsed.windSpeedUnit
+            : defaultSettings.windSpeedUnit,
+          language: ['tr', 'en'].includes(parsed.language)
+            ? parsed.language
+            : defaultSettings.language,
+          themeMode: ['light', 'dark', 'auto'].includes(parsed.themeMode)
+            ? parsed.themeMode
+            : defaultSettings.themeMode,
+          notifications: typeof parsed.notifications === 'boolean'
+            ? parsed.notifications
+            : defaultSettings.notifications,
+        };
+        
+        setSettings(validatedSettings);
       }
     } catch (error) {
       console.error('Failed to load settings:', error);
+      // Reset to defaults on error
+      setSettings(defaultSettings);
     }
     setIsLoaded(true);
   };

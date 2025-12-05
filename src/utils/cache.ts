@@ -19,8 +19,20 @@ interface CacheItem<T> {
   key: string;
 }
 
+const MAX_MEMORY_CACHE_SIZE = 50;
+
 class CacheManager {
   private memoryCache: Map<string, CacheItem<any>> = new Map();
+
+  // Ensure memory cache doesn't grow too large
+  private enforceMemoryCacheLimit(): void {
+    while (this.memoryCache.size > MAX_MEMORY_CACHE_SIZE) {
+      const firstKey = this.memoryCache.keys().next().value;
+      if (firstKey) {
+        this.memoryCache.delete(firstKey);
+      }
+    }
+  }
 
   // Get from memory cache first, then AsyncStorage
   async get<T>(key: string): Promise<T | null> {
@@ -34,9 +46,13 @@ class CacheManager {
       const stored = await AsyncStorage.getItem(key);
       if (stored) {
         const parsed = JSON.parse(stored) as CacheItem<T>;
-        // Store in memory cache
-        this.memoryCache.set(key, parsed);
-        return parsed.data;
+        // Validate parsed data structure
+        if (parsed && typeof parsed.timestamp === 'number' && parsed.data !== undefined) {
+          // Store in memory cache
+          this.memoryCache.set(key, parsed);
+          this.enforceMemoryCacheLimit();
+          return parsed.data;
+        }
       }
     } catch (error) {
       console.warn('Cache get error:', error);
@@ -54,6 +70,7 @@ class CacheManager {
 
     // Set in memory cache
     this.memoryCache.set(key, cacheItem);
+    this.enforceMemoryCacheLimit();
 
     try {
       await AsyncStorage.setItem(key, JSON.stringify(cacheItem));

@@ -7,14 +7,19 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ThemeColors } from '../utils/themeUtils';
 import { AppSettings } from '../types/settings';
 import { useFavorites } from '../context/FavoritesContext';
+import { usePremium } from '../context/PremiumContext';
 import { LocationData } from '../types/weather';
 import { fetchWeatherData } from '../services/weatherApi';
 import { getWeatherIcon } from '../utils/weatherUtils';
 import { getTranslations } from '../utils/translations';
+import { PremiumPaywall, PremiumBadge } from '../components';
+import { FREE_FAVORITES_LIMIT } from '../types/premium';
 
 interface FavoritesScreenProps {
   currentLocation?: LocationData;
@@ -41,9 +46,11 @@ export const FavoritesScreen: React.FC<FavoritesScreenProps> = ({
 }) => {
   const t = getTranslations(settings.language);
   const { favorites, addFavorite, removeFavorite, isFavorite } = useFavorites();
+  const { canAddFavorite, isPremium, getFavoritesLimit } = usePremium();
   const [weatherData, setWeatherData] = useState<Record<string, FavoriteWeatherData>>({});
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
 
   const loadWeatherForFavorites = async () => {
     if (favorites.length === 0) return;
@@ -84,6 +91,22 @@ export const FavoritesScreen: React.FC<FavoritesScreenProps> = ({
 
   const handleAddCurrentLocation = async () => {
     if (currentLocation) {
+      // Check premium limit
+      if (!canAddFavorite(favorites.length)) {
+        Alert.alert(
+          t.favoritesLimitReached,
+          t.upgradeForMore,
+          [
+            { text: t.cancel, style: 'cancel' },
+            { 
+              text: t.upgradeToPremium, 
+              onPress: () => setShowPremiumPaywall(true),
+              style: 'default'
+            },
+          ]
+        );
+        return;
+      }
       await addFavorite(currentLocation);
     }
   };
@@ -109,6 +132,42 @@ export const FavoritesScreen: React.FC<FavoritesScreenProps> = ({
       <Text style={[styles.title, { color: theme.text }]}>
         ⭐ {t.favoriteLocations}
       </Text>
+
+      {/* Favorites limit indicator for free users */}
+      {!isPremium && (
+        <TouchableOpacity 
+          style={[styles.limitBanner, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
+          onPress={() => setShowPremiumPaywall(true)}
+          activeOpacity={0.8}
+        >
+          <View style={styles.limitInfo}>
+            <Text style={[styles.limitText, { color: theme.text }]}>
+              {favorites.length}/{FREE_FAVORITES_LIMIT} {settings.language === 'tr' ? 'favori kullanıldı' : 'favorites used'}
+            </Text>
+            <View style={[styles.limitBar, { backgroundColor: theme.secondary }]}>
+              <View 
+                style={[
+                  styles.limitBarFill, 
+                  { 
+                    width: `${Math.min((favorites.length / FREE_FAVORITES_LIMIT) * 100, 100)}%`,
+                    backgroundColor: favorites.length >= FREE_FAVORITES_LIMIT ? '#FF6B6B' : theme.accent,
+                  }
+                ]} 
+              />
+            </View>
+          </View>
+          <LinearGradient
+            colors={['#FFD700', '#FFA500']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.unlimitedBadge}
+          >
+            <Text style={styles.unlimitedText}>
+              👑 {settings.language === 'tr' ? 'Sınırsız' : 'Unlimited'}
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      )}
 
       {/* Add current location button */}
       {currentLocation && !isCurrentLocationFavorite && (
@@ -195,6 +254,15 @@ export const FavoritesScreen: React.FC<FavoritesScreenProps> = ({
           })}
         </View>
       )}
+
+      {/* Premium Paywall */}
+      <PremiumPaywall
+        visible={showPremiumPaywall}
+        onClose={() => setShowPremiumPaywall(false)}
+        theme={theme}
+        language={settings.language}
+        highlightedFeature="unlimited_favorites"
+      />
     </ScrollView>
   );
 };
@@ -307,5 +375,43 @@ const styles = StyleSheet.create({
   },
   cardLoader: {
     marginVertical: 20,
+  },
+  // Premium limit styles
+  limitBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  limitInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  limitText: {
+    fontSize: 13,
+    fontWeight: '500',
+    marginBottom: 6,
+  },
+  limitBar: {
+    height: 4,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  limitBarFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  unlimitedBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  unlimitedText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#1A1A1A',
   },
 });

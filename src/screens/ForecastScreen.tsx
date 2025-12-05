@@ -10,6 +10,8 @@ import {
   MoonPhase,
   WeekAtGlance,
   AirQualityCard,
+  PremiumFeatureWrapper,
+  PremiumPaywall,
 } from '../components';
 import { WeatherData, DailyWeather } from '../types/weather';
 import { ThemeColors } from '../utils/themeUtils';
@@ -37,6 +39,11 @@ export const ForecastScreen: React.FC<ForecastScreenProps> = ({
   getTemperatureSymbol,
 }) => {
   const [selectedDay, setSelectedDay] = useState<DailyWeather | null>(null);
+  const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
+
+  const handleUpgradePress = () => {
+    setShowPremiumPaywall(true);
+  };
 
   return (
     <>
@@ -66,11 +73,19 @@ export const ForecastScreen: React.FC<ForecastScreenProps> = ({
           settings={settings}
         />
 
-        <TemperatureChart
-          daily={weatherData.daily}
-          theme={theme}
-          settings={settings}
-        />
+        {/* Premium: Temperature Chart */}
+        <PremiumFeatureWrapper 
+          feature="temperature_chart" 
+          theme={theme} 
+          language={settings.language}
+          onUpgradePress={handleUpgradePress}
+        >
+          <TemperatureChart
+            daily={weatherData.daily}
+            theme={theme}
+            settings={settings}
+          />
+        </PremiumFeatureWrapper>
 
         <SunPath
           daily={weatherData.daily[0]}
@@ -78,23 +93,47 @@ export const ForecastScreen: React.FC<ForecastScreenProps> = ({
           settings={settings}
         />
 
-        <MoonPhase
-          theme={theme}
-          settings={settings}
-        />
+        {/* Premium: Moon Phase */}
+        <PremiumFeatureWrapper 
+          feature="moon_phase" 
+          theme={theme} 
+          language={settings.language}
+          onUpgradePress={handleUpgradePress}
+        >
+          <MoonPhase
+            theme={theme}
+            settings={settings}
+          />
+        </PremiumFeatureWrapper>
 
-        <AirQualityCard
-          theme={theme}
-          settings={settings}
-          latitude={weatherData.location.latitude}
-          longitude={weatherData.location.longitude}
-        />
+        {/* Premium: Air Quality */}
+        <PremiumFeatureWrapper 
+          feature="air_quality" 
+          theme={theme} 
+          language={settings.language}
+          onUpgradePress={handleUpgradePress}
+        >
+          <AirQualityCard
+            theme={theme}
+            settings={settings}
+            latitude={weatherData.location.latitude}
+            longitude={weatherData.location.longitude}
+          />
+        </PremiumFeatureWrapper>
 
-        <PrecipitationChart
-          hourly={weatherData.hourly}
-          theme={theme}
-          settings={settings}
-        />
+        {/* Premium: Precipitation Chart */}
+        <PremiumFeatureWrapper 
+          feature="precipitation_chart" 
+          theme={theme} 
+          language={settings.language}
+          onUpgradePress={handleUpgradePress}
+        >
+          <PrecipitationChart
+            hourly={weatherData.hourly}
+            theme={theme}
+            settings={settings}
+          />
+        </PremiumFeatureWrapper>
 
         <DailyForecast
           dailyData={weatherData.daily}
@@ -113,6 +152,14 @@ export const ForecastScreen: React.FC<ForecastScreenProps> = ({
         settings={settings}
         convertTemperature={convertTemperature}
         convertWindSpeed={convertWindSpeed}
+      />
+
+      {/* Premium Paywall */}
+      <PremiumPaywall
+        visible={showPremiumPaywall}
+        onClose={() => setShowPremiumPaywall(false)}
+        theme={theme}
+        language={settings.language}
       />
     </>
   );

@@ -139,6 +139,23 @@ interface Translations {
   // Settings descriptions
   appInfo: string;
   poweredBy: string;
+
+  // Premium
+  premium: string;
+  premiumMember: string;
+  premiumFeature: string;
+  upgradeToPremium: string;
+  restorePurchases: string;
+  premiumBenefits: string;
+  unlockAllFeatures: string;
+  freePlan: string;
+  premiumPlan: string;
+  currentPlan: string;
+  managePremium: string;
+  premiumActive: string;
+  premiumExpires: string;
+  favoritesLimitReached: string;
+  upgradeForMore: string;
 }
 
 const tr: Translations = {
@@ -265,6 +282,23 @@ const tr: Translations = {
   // Settings descriptions
   appInfo: 'Uygulama Bilgisi',
   poweredBy: 'Open-Meteo API ile desteklenmektedir',
+
+  // Premium
+  premium: 'Premium',
+  premiumMember: 'Premium Üye',
+  premiumFeature: 'Premium Özellik',
+  upgradeToPremium: 'Premium\'a Yükselt',
+  restorePurchases: 'Satın Alımları Geri Yükle',
+  premiumBenefits: 'Premium Avantajları',
+  unlockAllFeatures: 'Tüm özelliklerin kilidini aç',
+  freePlan: 'Ücretsiz Plan',
+  premiumPlan: 'Premium Plan',
+  currentPlan: 'Mevcut Plan',
+  managePremium: 'Premium\'u Yönet',
+  premiumActive: 'Premium Aktif',
+  premiumExpires: 'Bitiş tarihi',
+  favoritesLimitReached: 'Favori limitine ulaştınız',
+  upgradeForMore: 'Daha fazla eklemek için Premium\'a yükseltin',
 };
 
 const en: Translations = {
@@ -391,6 +425,23 @@ const en: Translations = {
   // Settings descriptions
   appInfo: 'App Info',
   poweredBy: 'Powered by Open-Meteo API',
+
+  // Premium
+  premium: 'Premium',
+  premiumMember: 'Premium Member',
+  premiumFeature: 'Premium Feature',
+  upgradeToPremium: 'Upgrade to Premium',
+  restorePurchases: 'Restore Purchases',
+  premiumBenefits: 'Premium Benefits',
+  unlockAllFeatures: 'Unlock all features',
+  freePlan: 'Free Plan',
+  premiumPlan: 'Premium Plan',
+  currentPlan: 'Current Plan',
+  managePremium: 'Manage Premium',
+  premiumActive: 'Premium Active',
+  premiumExpires: 'Expires on',
+  favoritesLimitReached: 'Favorites limit reached',
+  upgradeForMore: 'Upgrade to Premium for more',
 };
 
 const translations: Record<Language, Translations> = {

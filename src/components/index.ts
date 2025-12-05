@@ -27,3 +27,7 @@ export { FeelsLikeExplainer } from './FeelsLikeExplainer';
 export { ComfortIndex } from './ComfortIndex';
 export { WeatherAlerts } from './WeatherAlerts';
 export { WeekAtGlance } from './WeekAtGlance';
+
+// Premium components
+export { PremiumFeatureWrapper, PremiumBadge, PremiumLockOverlay } from './PremiumFeatureWrapper';
+export { PremiumPaywall } from './PremiumPaywall';

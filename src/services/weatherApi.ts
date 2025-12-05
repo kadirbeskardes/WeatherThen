@@ -168,38 +168,67 @@ function parseDailyWeather(data: any): DailyWeather[] {
 }
 
 export async function searchLocation(query: string): Promise<GeocodingResult[]> {
-  if (query.length < 2) return [];
+  // Input validation
+  const sanitizedQuery = query.trim().substring(0, 100); // Limit query length
+  if (sanitizedQuery.length < 2) return [];
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
   
   const params = new URLSearchParams({
-    name: query,
+    name: sanitizedQuery,
     count: '10',
     language: 'tr',
     format: 'json'
   });
 
-  const response = await fetch(`${GEOCODING_URL}/search?${params}`);
-  
-  if (!response.ok) {
-    throw new Error('Location search failed');
-  }
+  try {
+    const response = await fetch(`${GEOCODING_URL}/search?${params}`, {
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      throw new Error(`Location search failed: ${response.status}`);
+    }
 
-  const data = await response.json();
-  
-  if (!data.results) return [];
-  
-  return data.results.map((result: any) => ({
-    id: result.id,
-    name: result.name,
-    latitude: result.latitude,
-    longitude: result.longitude,
-    country: result.country,
-    admin1: result.admin1,
-    timezone: result.timezone
-  }));
+    const data = await response.json();
+    
+    if (!data.results || !Array.isArray(data.results)) return [];
+    
+    return data.results.map((result: any) => ({
+      id: result.id,
+      name: typeof result.name === 'string' ? result.name : '',
+      latitude: typeof result.latitude === 'number' ? result.latitude : 0,
+      longitude: typeof result.longitude === 'number' ? result.longitude : 0,
+      country: typeof result.country === 'string' ? result.country : '',
+      admin1: typeof result.admin1 === 'string' ? result.admin1 : undefined,
+      timezone: typeof result.timezone === 'string' ? result.timezone : undefined
+    })).filter((r: GeocodingResult) => r.name && r.latitude && r.longitude);
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if ((error as Error).name === 'AbortError') {
+      throw new Error('Location search timed out');
+    }
+    throw error;
+  }
 }
 
-// Geocoding cache
+// Geocoding cache with size limit
+const GEOCODE_CACHE_MAX_SIZE = 100;
 const geocodeCache = new Map<string, string>();
+
+const addToGeocodeCache = (key: string, value: string) => {
+  // Limit cache size to prevent memory leaks
+  if (geocodeCache.size >= GEOCODE_CACHE_MAX_SIZE) {
+    const firstKey = geocodeCache.keys().next().value;
+    if (firstKey) {
+      geocodeCache.delete(firstKey);
+    }
+  }
+  geocodeCache.set(key, value);
+};
 
 export async function reverseGeocode(latitude: number, longitude: number): Promise<string> {
   // Round coordinates for cache key
@@ -230,7 +259,7 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
              'Bilinmeyen Konum';
       
       // Cache the result
-      geocodeCache.set(cacheKey, locationName);
+      addToGeocodeCache(cacheKey, locationName);
       return locationName;
     }
   } catch (error) {

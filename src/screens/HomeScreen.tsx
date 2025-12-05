@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, RefreshControl } from 'react-native';
 import {
   CurrentWeatherDisplay,
@@ -9,6 +9,8 @@ import {
   FeelsLikeExplainer,
   ComfortIndex,
   WeatherShare,
+  PremiumFeatureWrapper,
+  PremiumPaywall,
 } from '../components';
 import { WeatherData } from '../types/weather';
 import { ThemeColors } from '../utils/themeUtils';
@@ -37,7 +39,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   getTemperatureSymbol,
   getWindSpeedSymbol,
 }) => {
+  const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
+
+  const handleUpgradePress = () => {
+    setShowPremiumPaywall(true);
+  };
+
   return (
+    <>
     <ScrollView
       style={styles.container}
       showsVerticalScrollIndicator={false}
@@ -83,11 +92,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         getTemperatureSymbol={getTemperatureSymbol}
       />
 
-      <ComfortIndex
-        hourlyData={weatherData.hourly}
-        theme={theme}
-        settings={settings}
-      />
+      {/* Premium: Comfort Index */}
+      <PremiumFeatureWrapper 
+        feature="comfort_index" 
+        theme={theme} 
+        language={settings.language}
+        onUpgradePress={handleUpgradePress}
+      >
+        <ComfortIndex
+          hourlyData={weatherData.hourly}
+          theme={theme}
+          settings={settings}
+        />
+      </PremiumFeatureWrapper>
 
       <WeatherTips
         weather={weatherData}
@@ -101,14 +118,31 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         settings={settings}
       />
 
-      <WeatherShare
-        weatherData={weatherData}
-        theme={theme}
-        settings={settings}
-        convertTemperature={convertTemperature}
-        getTemperatureSymbol={getTemperatureSymbol}
-      />
+      {/* Premium: Weather Share */}
+      <PremiumFeatureWrapper 
+        feature="weather_share" 
+        theme={theme} 
+        language={settings.language}
+        onUpgradePress={handleUpgradePress}
+      >
+        <WeatherShare
+          weatherData={weatherData}
+          theme={theme}
+          settings={settings}
+          convertTemperature={convertTemperature}
+          getTemperatureSymbol={getTemperatureSymbol}
+        />
+      </PremiumFeatureWrapper>
     </ScrollView>
+
+    {/* Premium Paywall */}
+    <PremiumPaywall
+      visible={showPremiumPaywall}
+      onClose={() => setShowPremiumPaywall(false)}
+      theme={theme}
+      language={settings.language}
+    />
+    </>
   );
 };
 

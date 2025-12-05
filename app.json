@@ -2,7 +2,7 @@
   "expo": {
     "name": "WeatherThen",
     "slug": "WeatherThen",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -15,8 +15,10 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Bulunduğunuz konumdaki hava durumunu göstermek için konumunuza ihtiyacımız var."
-      }
+        "NSLocationWhenInUseUsageDescription": "Bulunduğunuz konumdaki hava durumunu göstermek için konumunuza ihtiyacımız var.",
+        "NSWidgetWantsLocation": true
+      },
+      "bundleIdentifier": "com.kadirbeskardes.WeatherThen"
     },
     "android": {
       "adaptiveIcon": {
@@ -29,7 +31,9 @@
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.SCHEDULE_EXACT_ALARM"
       ],
       "package": "com.kadirbeskardes.WeatherThen"
     },

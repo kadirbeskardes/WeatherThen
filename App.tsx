@@ -25,6 +25,7 @@ import { getWeatherCondition } from './src/utils/weatherUtils';
 import { getThemeColors, getGradientColors } from './src/utils/themeUtils';
 import { SettingsProvider, useSettings } from './src/context/SettingsContext';
 import { FavoritesProvider } from './src/context/FavoritesContext';
+import { PremiumProvider } from './src/context/PremiumContext';
 import { getTranslations } from './src/utils/translations';
 import { cacheManager } from './src/utils/cache';
 
@@ -289,9 +290,11 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <SettingsProvider>
-        <FavoritesProvider>
-          <WeatherApp />
-        </FavoritesProvider>
+        <PremiumProvider>
+          <FavoritesProvider>
+            <WeatherApp />
+          </FavoritesProvider>
+        </PremiumProvider>
       </SettingsProvider>
     </SafeAreaProvider>
   );
