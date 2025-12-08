@@ -124,11 +124,19 @@ interface Translations {
   loading: string;
   updatedNow: string;
   updatedMinutesAgo: string;
+  pullToRefresh: string;
+  refreshing: string;
 
   // Navigation
   home: string;
   forecast: string;
   favorites: string;
+  
+  // Comparisons
+  warmerThanYesterday: string;
+  colderThanYesterday: string;
+  sameAsYesterday: string;
+  temperatureTrend: string;
   
   // Favorites Screen
   favoriteLocations: string;
@@ -267,11 +275,19 @@ const tr: Translations = {
   loading: 'Hava durumu yükleniyor...',
   updatedNow: 'Şimdi güncellendi',
   updatedMinutesAgo: 'dakika önce',
+  pullToRefresh: 'Yenilemek için kaydır',
+  refreshing: 'Güncelleniyor...',
 
   // Navigation
   home: 'Ana Sayfa',
   forecast: 'Tahmin',
   favorites: 'Favoriler',
+  
+  // Comparisons
+  warmerThanYesterday: 'Dünden daha sıcak',
+  colderThanYesterday: 'Dünden daha soğuk',
+  sameAsYesterday: 'Dünle aynı',
+  temperatureTrend: 'Sıcaklık Trendi',
   
   // Favorites Screen
   favoriteLocations: 'Favori Konumlar',
@@ -410,11 +426,19 @@ const en: Translations = {
   loading: 'Loading weather...',
   updatedNow: 'Updated now',
   updatedMinutesAgo: 'minutes ago',
+  pullToRefresh: 'Pull to refresh',
+  refreshing: 'Refreshing...',
 
   // Navigation
   home: 'Home',
   forecast: 'Forecast',
   favorites: 'Favorites',
+  
+  // Comparisons
+  warmerThanYesterday: 'Warmer than yesterday',
+  colderThanYesterday: 'Colder than yesterday',
+  sameAsYesterday: 'Same as yesterday',
+  temperatureTrend: 'Temperature Trend',
   
   // Favorites Screen
   favoriteLocations: 'Favorite Locations',

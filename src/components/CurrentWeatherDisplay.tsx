@@ -15,6 +15,7 @@ interface CurrentWeatherDisplayProps {
   convertWindSpeed: (kmh: number) => number;
   getTemperatureSymbol: () => string;
   getWindSpeedSymbol: () => string;
+  yesterdayTemp?: number;
 }
 
 const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
@@ -26,10 +27,24 @@ const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
   convertWindSpeed,
   getTemperatureSymbol,
   getWindSpeedSymbol,
+  yesterdayTemp,
 }) => {
   const t = useMemo(() => getTranslations(settings.language), [settings.language]);
   const weatherInfo = useMemo(() => getWeatherInfo(weather.weatherCode, weather.isDay), [weather.weatherCode, weather.isDay]);
   const uvInfo = useMemo(() => getUVIndexLevel(weather.uvIndex, settings.language), [weather.uvIndex, settings.language]);
+  
+  // Temperature comparison with yesterday
+  const tempComparison = useMemo(() => {
+    if (!yesterdayTemp) return null;
+    const diff = weather.temperature - yesterdayTemp;
+    if (Math.abs(diff) < 1) {
+      return { text: t.sameAsYesterday, icon: '➡️', color: theme.textSecondary };
+    } else if (diff > 0) {
+      return { text: `${t.warmerThanYesterday} (+${Math.round(diff)}°)`, icon: '🔥', color: '#FF6B6B' };
+    } else {
+      return { text: `${t.colderThanYesterday} (${Math.round(diff)}°)`, icon: '❄️', color: '#4ECDC4' };
+    }
+  }, [weather.temperature, yesterdayTemp, t, theme.textSecondary]);
   
   const windDir = useMemo(() => {
     const windDirections = [t.windN, t.windNE, t.windE, t.windSE, t.windS, t.windSW, t.windW, t.windNW];
@@ -78,6 +93,15 @@ const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
       <Text style={[styles.feelsLike, { color: theme.textSecondary }]}>
         {t.feelsLike}: {displayFeelsLike}°
       </Text>
+      
+      {tempComparison && (
+        <View style={[styles.comparisonBadge, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+          <Text style={styles.comparisonIcon}>{tempComparison.icon}</Text>
+          <Text style={[styles.comparisonText, { color: tempComparison.color }]}>
+            {tempComparison.text}
+          </Text>
+        </View>
+      )}
 
       <View style={styles.statsContainer}>
         <View style={[styles.statCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
@@ -179,7 +203,24 @@ const styles = StyleSheet.create({
   },
   feelsLike: {
     fontSize: 16,
-    marginBottom: 25,
+    marginBottom: 8,
+  },
+  comparisonBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginBottom: 20,
+  },
+  comparisonIcon: {
+    fontSize: 14,
+    marginRight: 6,
+  },
+  comparisonText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   statsContainer: {
     flexDirection: 'row',

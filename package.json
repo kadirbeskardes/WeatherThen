@@ -1,6 +1,6 @@
 {
   "name": "weatherthen",
-  "version": "0.3.0",
+  "version": "0.3.3",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-community/blur": "^4.4.1",
     "@react-navigation/bottom-tabs": "^7.8.8",
     "@react-navigation/native": "^7.1.22",
     "babel-preset-expo": "^54.0.7",
     "expo": "~54.0.25",
+    "expo-blur": "~15.0.0",
     "expo-linear-gradient": "^15.0.7",
     "expo-location": "^19.0.7",
     "expo-status-bar": "~3.0.8",

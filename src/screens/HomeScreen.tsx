@@ -11,6 +11,8 @@ import {
   WeatherShare,
   PremiumFeatureWrapper,
   PremiumPaywall,
+  QuickStats,
+  DayNightCycle,
 } from '../components';
 import { WeatherData } from '../types/weather';
 import { ThemeColors } from '../utils/themeUtils';
@@ -68,6 +70,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         convertWindSpeed={convertWindSpeed}
         getTemperatureSymbol={getTemperatureSymbol}
         getWindSpeedSymbol={getWindSpeedSymbol}
+        yesterdayTemp={weatherData.daily[1]?.temperatureMax}
       />
 
       {/* Weather Alerts - Show first if there are any */}
@@ -82,6 +85,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         theme={theme}
         settings={settings}
         convertTemperature={convertTemperature}
+      />
+      
+      <QuickStats
+        weatherData={weatherData}
+        theme={theme}
+        settings={settings}
+      />
+      
+      <DayNightCycle
+        sunrise={weatherData.daily[0].sunrise}
+        sunset={weatherData.daily[0].sunset}
+        currentTime={new Date()}
+        theme={theme}
+        language={settings.language}
       />
 
       <FeelsLikeExplainer

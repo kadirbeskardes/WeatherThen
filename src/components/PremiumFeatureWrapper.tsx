@@ -5,8 +5,9 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { usePremium } from '../context/PremiumContext';
 import { PremiumFeature } from '../types/premium';
 import { ThemeColors } from '../utils/themeUtils';
@@ -42,10 +43,14 @@ export const PremiumFeatureWrapper: React.FC<PremiumFeatureWrapperProps> = ({
     <View style={styles.container}>
       {showPreview && (
         <View style={styles.previewContainer}>
-          <View style={styles.blurOverlay}>
-            {children}
-          </View>
-          <View style={[styles.overlay, { backgroundColor: theme.card }]} />
+          {children}
+          <BlurView 
+            intensity={80} 
+            style={StyleSheet.absoluteFill}
+            tint={theme.isDark ? 'dark' : 'light'}
+          >
+            <View style={[styles.blurOverlay, { backgroundColor: theme.isDark ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)' }]} />
+          </BlurView>
         </View>
       )}
       
@@ -161,14 +166,13 @@ const styles = StyleSheet.create({
   },
   previewContainer: {
     position: 'relative',
-    opacity: 0.3,
-  },
-  blurOverlay: {
+    borderRadius: 16,
     overflow: 'hidden',
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0.5,
+  blurOverlay: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   premiumBanner: {
     marginHorizontal: 20,

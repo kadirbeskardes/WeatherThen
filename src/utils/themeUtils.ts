@@ -8,6 +8,7 @@ export interface ThemeColors {
   card: string;
   cardBorder: string;
   accent: string;
+  isDark?: boolean;
 }
 
 const themes: Record<string, Record<'day' | 'night', ThemeColors>> = {
@@ -175,7 +176,11 @@ const themes: Record<string, Record<'day' | 'night', ThemeColors>> = {
 
 export function getThemeColors(condition: WeatherCondition, isDay: boolean): ThemeColors {
   const theme = themes[condition] || themes.clear;
-  return theme[isDay ? 'day' : 'night'];
+  const themeColors = theme[isDay ? 'day' : 'night'];
+  return {
+    ...themeColors,
+    isDark: !isDay,
+  };
 }
 
 export function getGradientColors(condition: WeatherCondition, isDay: boolean): string[] {
