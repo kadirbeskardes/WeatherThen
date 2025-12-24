@@ -22,15 +22,15 @@ interface HourCardProps {
 
 // Memoized hour card component
 const HourCard = memo<HourCardProps>(({ hour, theme, settings, convertTemperature }) => {
-  const temp = useMemo(() => convertTemperature(hour.temperature), [hour.temperature, convertTemperature]);
-  const icon = useMemo(() => getWeatherIcon(hour.weatherCode, hour.isDay), [hour.weatherCode, hour.isDay]);
-  const time = useMemo(() => formatHour(hour.time, settings.language, settings.hourFormat24), [hour.time, settings.language, settings.hourFormat24]);
+  const displayTemperature = useMemo(() => convertTemperature(hour.temperature), [hour.temperature, convertTemperature]);
+  const weatherIcon = useMemo(() => getWeatherIcon(hour.weatherCode, hour.isDay), [hour.weatherCode, hour.isDay]);
+  const formattedTime = useMemo(() => formatHour(hour.time, settings.language, settings.hourFormat24), [hour.time, settings.language, settings.hourFormat24]);
 
   return (
     <View style={[styles.hourCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
-      <Text style={[styles.time, { color: theme.textSecondary }]}>{time}</Text>
-      <Text style={styles.icon}>{icon}</Text>
-      <Text style={[styles.temp, { color: theme.text }]}>{temp}°</Text>
+      <Text style={[styles.time, { color: theme.textSecondary }]}>{formattedTime}</Text>
+      <Text style={styles.icon}>{weatherIcon}</Text>
+      <Text style={[styles.temp, { color: theme.text }]}>{displayTemperature}°</Text>
       {hour.precipitationProbability > 0 && (
         <View style={styles.precipContainer}>
           <Text style={styles.precipIcon}>💧</Text>
@@ -62,7 +62,7 @@ const HourlyForecastComponent: React.FC<HourlyForecastProps> = ({
   settings,
   convertTemperature,
 }) => {
-  const t = useMemo(() => getTranslations(settings.language), [settings.language]);
+  const translations = useMemo(() => getTranslations(settings.language), [settings.language]);
   
   // Limit data to 24 hours
   const displayData = useMemo(() => hourlyData.slice(0, 24), [hourlyData]);
@@ -82,7 +82,7 @@ const HourlyForecastComponent: React.FC<HourlyForecastProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: theme.text }]}>{t.hourlyForecast}</Text>
+      <Text style={[styles.title, { color: theme.text }]}>{translations.hourlyForecast}</Text>
       <FlatList
         horizontal
         data={displayData}

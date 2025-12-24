@@ -21,35 +21,35 @@ const QuickStatsComponent: React.FC<QuickStatsProps> = ({
   theme,
   settings,
 }) => {
-  const t = useMemo(() => getTranslations(settings.language), [settings.language]);
+  const translations = useMemo(() => getTranslations(settings.language), [settings.language]);
   
   // Bugün yağmur yağacak mı?
   const willRainToday = useMemo(() => {
-    const todayData = weatherData.hourly.slice(0, 24);
-    return todayData.some(hour => hour.precipitationProbability > 50);
+    const todayHourlyData = weatherData.hourly.slice(0, 24);
+    return todayHourlyData.some(hour => hour.precipitationProbability > 50);
   }, [weatherData.hourly]);
   
   // Ortalama nem
-  const avgHumidity = useMemo(() => {
-    const todayData = weatherData.hourly.slice(0, 24);
-    const sum = todayData.reduce((acc, hour) => acc + hour.humidity, 0);
-    return Math.round(sum / todayData.length);
+  const averageHumidity = useMemo(() => {
+    const todayHourlyData = weatherData.hourly.slice(0, 24);
+    const humiditySum = todayHourlyData.reduce((accumulator, hour) => accumulator + hour.humidity, 0);
+    return Math.round(humiditySum / todayHourlyData.length);
   }, [weatherData.hourly]);
   
   // Günün en yüksek rüzgar hızı
-  const maxWind = useMemo(() => {
-    const todayData = weatherData.hourly.slice(0, 24);
-    return Math.max(...todayData.map(hour => hour.windSpeed));
+  const maximumWindSpeed = useMemo(() => {
+    const todayHourlyData = weatherData.hourly.slice(0, 24);
+    return Math.max(...todayHourlyData.map(hour => hour.windSpeed));
   }, [weatherData.hourly]);
   
   // En sıcak saat
-  const hottestHour = useMemo(() => {
-    const todayData = weatherData.hourly.slice(0, 24);
-    const maxTemp = Math.max(...todayData.map(hour => hour.temperature));
-    const hottestIndex = todayData.findIndex(hour => hour.temperature === maxTemp);
-    if (hottestIndex >= 0) {
-      const hour = new Date(todayData[hottestIndex].time).getHours();
-      return `${hour}:00`;
+  const hottestHourOfDay = useMemo(() => {
+    const todayHourlyData = weatherData.hourly.slice(0, 24);
+    const maxTemperature = Math.max(...todayHourlyData.map(hour => hour.temperature));
+    const hottestHourIndex = todayHourlyData.findIndex(hour => hour.temperature === maxTemperature);
+    if (hottestHourIndex >= 0) {
+      const hourValue = new Date(todayHourlyData[hottestHourIndex].time).getHours();
+      return `${hourValue}:00`;
     }
     return '--:--';
   }, [weatherData.hourly]);
@@ -79,7 +79,7 @@ const QuickStatsComponent: React.FC<QuickStatsProps> = ({
             {settings.language === 'tr' ? 'Ort. Nem' : 'Avg. Humidity'}
           </Text>
           <Text style={[styles.statValue, { color: theme.text }]}>
-            {avgHumidity}%
+            {averageHumidity}%
           </Text>
         </View>
         
@@ -89,7 +89,7 @@ const QuickStatsComponent: React.FC<QuickStatsProps> = ({
             {settings.language === 'tr' ? 'Maks. Rüzgar' : 'Max Wind'}
           </Text>
           <Text style={[styles.statValue, { color: theme.text }]}>
-            {maxWind} km/h
+            {maximumWindSpeed} km/h
           </Text>
         </View>
         
@@ -99,7 +99,7 @@ const QuickStatsComponent: React.FC<QuickStatsProps> = ({
             {settings.language === 'tr' ? 'En Sıcak' : 'Hottest'}
           </Text>
           <Text style={[styles.statValue, { color: theme.text }]}>
-            {hottestHour}
+            {hottestHourOfDay}
           </Text>
         </View>
       </View>

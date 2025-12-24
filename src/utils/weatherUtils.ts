@@ -101,17 +101,17 @@ export function getWindDirection(degrees: number): string {
 }
 
 export function getUVIndexLevel(index: number, language: Language = 'tr'): { level: string; color: string } {
-  const levels = {
+  const uvLevelLabels = {
     tr: { low: 'Düşük', moderate: 'Orta', high: 'Yüksek', veryHigh: 'Çok Yüksek', extreme: 'Aşırı' },
     en: { low: 'Low', moderate: 'Moderate', high: 'High', veryHigh: 'Very High', extreme: 'Extreme' }
   };
-  const l = levels[language];
+  const localizedLabels = uvLevelLabels[language];
   
-  if (index <= 2) return { level: l.low, color: '#4CAF50' };
-  if (index <= 5) return { level: l.moderate, color: '#FFEB3B' };
-  if (index <= 7) return { level: l.high, color: '#FF9800' };
-  if (index <= 10) return { level: l.veryHigh, color: '#F44336' };
-  return { level: l.extreme, color: '#9C27B0' };
+  if (index <= 2) return { level: localizedLabels.low, color: '#4CAF50' };
+  if (index <= 5) return { level: localizedLabels.moderate, color: '#FFEB3B' };
+  if (index <= 7) return { level: localizedLabels.high, color: '#FF9800' };
+  if (index <= 10) return { level: localizedLabels.veryHigh, color: '#F44336' };
+  return { level: localizedLabels.extreme, color: '#9C27B0' };
 }
 
 export function formatTime(isoString: string, language: Language = 'tr', hour24: boolean = true): string {

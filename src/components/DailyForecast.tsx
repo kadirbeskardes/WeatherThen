@@ -23,13 +23,13 @@ interface DayCardProps {
 }
 
 const DayCard = memo<DayCardProps>(({ day, theme, settings, onPress, convertTemperature }) => {
-  const dayName = useMemo(() => formatDayName(day.date, settings.language), [day.date, settings.language]);
-  const sunrise = useMemo(() => formatTime(day.sunrise, settings.language, settings.hourFormat24), [day.sunrise, settings.language, settings.hourFormat24]);
-  const sunset = useMemo(() => formatTime(day.sunset, settings.language, settings.hourFormat24), [day.sunset, settings.language, settings.hourFormat24]);
-  const icon = useMemo(() => getWeatherIcon(day.weatherCode, true), [day.weatherCode]);
-  const maxTemp = useMemo(() => convertTemperature(day.temperatureMax), [day.temperatureMax, convertTemperature]);
-  const minTemp = useMemo(() => convertTemperature(day.temperatureMin), [day.temperatureMin, convertTemperature]);
-  const tempBarWidth = useMemo(() => `${((day.temperatureMax - day.temperatureMin) / 40) * 100}%`, [day.temperatureMax, day.temperatureMin]);
+  const formattedDayName = useMemo(() => formatDayName(day.date, settings.language), [day.date, settings.language]);
+  const formattedSunrise = useMemo(() => formatTime(day.sunrise, settings.language, settings.hourFormat24), [day.sunrise, settings.language, settings.hourFormat24]);
+  const formattedSunset = useMemo(() => formatTime(day.sunset, settings.language, settings.hourFormat24), [day.sunset, settings.language, settings.hourFormat24]);
+  const weatherIcon = useMemo(() => getWeatherIcon(day.weatherCode, true), [day.weatherCode]);
+  const displayMaxTemperature = useMemo(() => convertTemperature(day.temperatureMax), [day.temperatureMax, convertTemperature]);
+  const displayMinTemperature = useMemo(() => convertTemperature(day.temperatureMin), [day.temperatureMin, convertTemperature]);
+  const temperatureRangeBarWidth = useMemo(() => `${((day.temperatureMax - day.temperatureMin) / 40) * 100}%`, [day.temperatureMax, day.temperatureMin]);
 
   return (
     <TouchableOpacity
@@ -38,15 +38,15 @@ const DayCard = memo<DayCardProps>(({ day, theme, settings, onPress, convertTemp
       activeOpacity={0.7}
     >
       <View style={styles.dayInfo}>
-        <Text style={[styles.dayName, { color: theme.text }]}>{dayName}</Text>
+        <Text style={[styles.dayName, { color: theme.text }]}>{formattedDayName}</Text>
         <View style={styles.sunTimes}>
-          <Text style={[styles.sunTime, { color: theme.textSecondary }]}>🌅 {sunrise}</Text>
-          <Text style={[styles.sunTime, { color: theme.textSecondary }]}>🌇 {sunset}</Text>
+          <Text style={[styles.sunTime, { color: theme.textSecondary }]}>🌅 {formattedSunrise}</Text>
+          <Text style={[styles.sunTime, { color: theme.textSecondary }]}>🌇 {formattedSunset}</Text>
         </View>
       </View>
 
       <View style={styles.weatherInfo}>
-        <Text style={styles.icon}>{icon}</Text>
+        <Text style={styles.icon}>{weatherIcon}</Text>
         {day.precipitationProbability > 0 && (
           <Text style={[styles.precip, { color: '#64B5F6' }]}>
             💧{day.precipitationProbability}%
@@ -55,11 +55,11 @@ const DayCard = memo<DayCardProps>(({ day, theme, settings, onPress, convertTemp
       </View>
 
       <View style={styles.tempContainer}>
-        <Text style={[styles.tempMax, { color: theme.text }]}>{maxTemp}°</Text>
+        <Text style={[styles.tempMax, { color: theme.text }]}>{displayMaxTemperature}°</Text>
         <View style={[styles.tempBar, { backgroundColor: theme.secondary }]}>
-          <View style={[styles.tempBarFill, { width: tempBarWidth, backgroundColor: theme.accent }]} />
+          <View style={[styles.tempBarFill, { width: temperatureRangeBarWidth, backgroundColor: theme.accent }]} />
         </View>
-        <Text style={[styles.tempMin, { color: theme.textSecondary }]}>{minTemp}°</Text>
+        <Text style={[styles.tempMin, { color: theme.textSecondary }]}>{displayMinTemperature}°</Text>
       </View>
     </TouchableOpacity>
   );
@@ -81,7 +81,7 @@ const DailyForecastComponent: React.FC<DailyForecastProps> = ({
   settings,
   convertTemperature,
 }) => {
-  const t = useMemo(() => getTranslations(settings.language), [settings.language]);
+  const translations = useMemo(() => getTranslations(settings.language), [settings.language]);
   
   const renderItem = useCallback(({ item }: { item: DailyWeather }) => (
     <DayCard
@@ -97,7 +97,7 @@ const DailyForecastComponent: React.FC<DailyForecastProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: theme.text }]}>{t.dailyForecast}</Text>
+      <Text style={[styles.title, { color: theme.text }]}>{translations.dailyForecast}</Text>
       <FlatList
         data={dailyData}
         renderItem={renderItem}

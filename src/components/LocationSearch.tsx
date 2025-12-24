@@ -30,41 +30,41 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
   theme,
   language,
 }) => {
-  const t = getTranslations(language);
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<GeocodingResult[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const translations = getTranslations(language);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<GeocodingResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   useEffect(() => {
-    const delayDebounceFn = setTimeout(async () => {
-      if (query.length >= 2) {
-        setLoading(true);
-        setError(null);
+    const searchDebounceTimer = setTimeout(async () => {
+      if (searchQuery.length >= 2) {
+        setIsSearching(true);
+        setSearchError(null);
         try {
-          const locations = await searchLocation(query);
-          setResults(locations);
+          const locationResults = await searchLocation(searchQuery);
+          setSearchResults(locationResults);
         } catch (err) {
-          setError(language === 'tr' ? 'Arama yapılırken bir hata oluştu' : 'An error occurred while searching');
-          setResults([]);
+          setSearchError(language === 'tr' ? 'Arama yapılırken bir hata oluştu' : 'An error occurred while searching');
+          setSearchResults([]);
         }
-        setLoading(false);
+        setIsSearching(false);
       } else {
-        setResults([]);
+        setSearchResults([]);
       }
     }, 300);
 
-    return () => clearTimeout(delayDebounceFn);
-  }, [query, language]);
+    return () => clearTimeout(searchDebounceTimer);
+  }, [searchQuery, language]);
 
-  const handleSelect = (location: GeocodingResult) => {
+  const handleLocationSelection = (location: GeocodingResult) => {
     onLocationSelect(location);
-    setQuery('');
-    setResults([]);
+    setSearchQuery('');
+    setSearchResults([]);
     onClose();
   };
 
-  const popularCities: GeocodingResult[] = [
+  const predefinedPopularCities: GeocodingResult[] = [
     { id: 1, name: 'İstanbul', latitude: 41.0082, longitude: 28.9784, country: language === 'tr' ? 'Türkiye' : 'Turkey', timezone: 'Europe/Istanbul' },
     { id: 2, name: 'Ankara', latitude: 39.9334, longitude: 32.8597, country: language === 'tr' ? 'Türkiye' : 'Turkey', timezone: 'Europe/Istanbul' },
     { id: 3, name: 'İzmir', latitude: 38.4192, longitude: 27.1287, country: language === 'tr' ? 'Türkiye' : 'Turkey', timezone: 'Europe/Istanbul' },
@@ -83,7 +83,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
       <View style={styles.modalOverlay}>
         <View style={[styles.modalContent, { backgroundColor: theme.primary[0] }]}>
           <View style={styles.header}>
-            <Text style={[styles.title, { color: theme.text }]}>{t.searchLocation}</Text>
+            <Text style={[styles.title, { color: theme.text }]}>{translations.searchLocation}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Text style={[styles.closeText, { color: theme.text }]}>✕</Text>
             </TouchableOpacity>
@@ -93,35 +93,35 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
             <Text style={styles.searchIcon}>🔍</Text>
             <TextInput
               style={[styles.input, { color: theme.text }]}
-              placeholder={t.searchPlaceholder}
+              placeholder={translations.searchPlaceholder}
               placeholderTextColor={theme.textSecondary}
-              value={query}
-              onChangeText={setQuery}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
               autoFocus
             />
-            {query.length > 0 && (
-              <TouchableOpacity onPress={() => setQuery('')}>
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
                 <Text style={[styles.clearText, { color: theme.textSecondary }]}>✕</Text>
               </TouchableOpacity>
             )}
           </View>
 
-          {loading && (
+          {isSearching && (
             <ActivityIndicator size="small" color={theme.accent} style={styles.loader} />
           )}
 
-          {error && (
-            <Text style={[styles.error, { color: '#FF6B6B' }]}>{error}</Text>
+          {searchError && (
+            <Text style={[styles.error, { color: '#FF6B6B' }]}>{searchError}</Text>
           )}
 
-          {results.length > 0 ? (
+          {searchResults.length > 0 ? (
             <FlatList
-              data={results}
+              data={searchResults}
               keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[styles.resultItem, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
-                  onPress={() => handleSelect(item)}
+                  onPress={() => handleLocationSelection(item)}
                 >
                   <Text style={styles.locationIcon}>📍</Text>
                   <View style={styles.locationInfo}>
@@ -136,16 +136,16 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
               )}
               style={styles.resultsList}
             />
-          ) : query.length === 0 ? (
+          ) : searchQuery.length === 0 ? (
             <View style={styles.popularSection}>
               <Text style={[styles.popularTitle, { color: theme.textSecondary }]}>
-                {t.popularCities}
+                {translations.popularCities}
               </Text>
-              {popularCities.map((city) => (
+              {predefinedPopularCities.map((city) => (
                 <TouchableOpacity
                   key={city.id}
                   style={[styles.resultItem, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
-                  onPress={() => handleSelect(city)}
+                  onPress={() => handleLocationSelection(city)}
                 >
                   <Text style={styles.locationIcon}>🏙️</Text>
                   <View style={styles.locationInfo}>

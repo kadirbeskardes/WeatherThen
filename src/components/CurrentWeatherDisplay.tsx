@@ -29,31 +29,31 @@ const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
   getWindSpeedSymbol,
   yesterdayTemp,
 }) => {
-  const t = useMemo(() => getTranslations(settings.language), [settings.language]);
+  const translations = useMemo(() => getTranslations(settings.language), [settings.language]);
   const weatherInfo = useMemo(() => getWeatherInfo(weather.weatherCode, weather.isDay), [weather.weatherCode, weather.isDay]);
   const uvInfo = useMemo(() => getUVIndexLevel(weather.uvIndex, settings.language), [weather.uvIndex, settings.language]);
   
   // Temperature comparison with yesterday
   const tempComparison = useMemo(() => {
     if (!yesterdayTemp) return null;
-    const diff = weather.temperature - yesterdayTemp;
-    if (Math.abs(diff) < 1) {
-      return { text: t.sameAsYesterday, icon: '➡️', color: theme.textSecondary };
-    } else if (diff > 0) {
-      return { text: `${t.warmerThanYesterday} (+${Math.round(diff)}°)`, icon: '🔥', color: '#FF6B6B' };
+    const temperatureDifference = weather.temperature - yesterdayTemp;
+    if (Math.abs(temperatureDifference) < 1) {
+      return { text: translations.sameAsYesterday, icon: '➡️', color: theme.textSecondary };
+    } else if (temperatureDifference > 0) {
+      return { text: `${translations.warmerThanYesterday} (+${Math.round(temperatureDifference)}°)`, icon: '🔥', color: '#FF6B6B' };
     } else {
-      return { text: `${t.colderThanYesterday} (${Math.round(diff)}°)`, icon: '❄️', color: '#4ECDC4' };
+      return { text: `${translations.colderThanYesterday} (${Math.round(temperatureDifference)}°)`, icon: '❄️', color: '#4ECDC4' };
     }
-  }, [weather.temperature, yesterdayTemp, t, theme.textSecondary]);
+  }, [weather.temperature, yesterdayTemp, translations, theme.textSecondary]);
   
-  const windDir = useMemo(() => {
-    const windDirections = [t.windN, t.windNE, t.windE, t.windSE, t.windS, t.windSW, t.windW, t.windNW];
+  const windDirectionLabel = useMemo(() => {
+    const windDirections = [translations.windN, translations.windNE, translations.windE, translations.windSE, translations.windS, translations.windSW, translations.windW, translations.windNW];
     return windDirections[Math.round(weather.windDirection / 45) % 8];
-  }, [weather.windDirection, t]);
+  }, [weather.windDirection, translations]);
 
   // Get weather description based on language
   const weatherDescription = useMemo(() => {
-    const descMap: Record<number, keyof typeof t> = {
+    const weatherCodeToDescriptionKey: Record<number, keyof typeof translations> = {
       0: 'clear', 1: 'mostlyClear', 2: 'partlyCloudy', 3: 'overcast',
       45: 'fog', 48: 'rimeFog',
       51: 'lightDrizzle', 53: 'moderateDrizzle', 55: 'denseDrizzle',
@@ -65,15 +65,15 @@ const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
       85: 'lightSnowShowers', 86: 'heavySnowShowers',
       95: 'thunderstorm', 96: 'thunderstormLightHail', 99: 'thunderstormHeavyHail',
     };
-    const key = descMap[weather.weatherCode] || 'clear';
-    return t[key];
-  }, [weather.weatherCode, t]);
+    const descriptionKey = weatherCodeToDescriptionKey[weather.weatherCode] || 'clear';
+    return translations[descriptionKey];
+  }, [weather.weatherCode, translations]);
 
   // Memoize converted values
-  const displayTemp = useMemo(() => convertTemperature(weather.temperature), [weather.temperature, convertTemperature]);
-  const displayFeelsLike = useMemo(() => convertTemperature(weather.apparentTemperature), [weather.apparentTemperature, convertTemperature]);
-  const displayWind = useMemo(() => convertWindSpeed(weather.windSpeed), [weather.windSpeed, convertWindSpeed]);
-  const windSymbol = useMemo(() => getWindSpeedSymbol(), [getWindSpeedSymbol]);
+  const displayTemperature = useMemo(() => convertTemperature(weather.temperature), [weather.temperature, convertTemperature]);
+  const displayFeelsLikeTemperature = useMemo(() => convertTemperature(weather.apparentTemperature), [weather.apparentTemperature, convertTemperature]);
+  const displayWindSpeed = useMemo(() => convertWindSpeed(weather.windSpeed), [weather.windSpeed, convertWindSpeed]);
+  const windSpeedUnitSymbol = useMemo(() => getWindSpeedSymbol(), [getWindSpeedSymbol]);
 
   return (
     <View style={styles.container}>
@@ -82,7 +82,7 @@ const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
       <View style={styles.mainInfo}>
         <Text style={styles.icon}>{weatherInfo.icon}</Text>
         <Text style={[styles.temperature, { color: theme.text }]}>
-          {displayTemp}°
+          {displayTemperature}°
         </Text>
       </View>
       
@@ -91,7 +91,7 @@ const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
       </Text>
       
       <Text style={[styles.feelsLike, { color: theme.textSecondary }]}>
-        {t.feelsLike}: {displayFeelsLike}°
+        {translations.feelsLike}: {displayFeelsLikeTemperature}°
       </Text>
       
       {tempComparison && (
@@ -106,16 +106,16 @@ const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
       <View style={styles.statsContainer}>
         <View style={[styles.statCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
           <Text style={styles.statIcon}>💨</Text>
-          <Text style={[styles.statValue, { color: theme.text }]}>{displayWind} {windSymbol}</Text>
+          <Text style={[styles.statValue, { color: theme.text }]}>{displayWindSpeed} {windSpeedUnitSymbol}</Text>
           <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-            {t.wind} {windDir}
+            {translations.wind} {windDirectionLabel}
           </Text>
         </View>
 
         <View style={[styles.statCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
           <Text style={styles.statIcon}>💧</Text>
           <Text style={[styles.statValue, { color: theme.text }]}>{weather.humidity}%</Text>
-          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t.humidity}</Text>
+          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{translations.humidity}</Text>
         </View>
 
         <View style={[styles.statCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
@@ -127,7 +127,7 @@ const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
         <View style={[styles.statCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
           <Text style={styles.statIcon}>👁️</Text>
           <Text style={[styles.statValue, { color: theme.text }]}>{weather.visibility} km</Text>
-          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t.visibility}</Text>
+          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{translations.visibility}</Text>
         </View>
       </View>
 
@@ -136,7 +136,7 @@ const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
           <View style={styles.extraStatRow}>
             <Text style={styles.extraStatIcon}>🌡️</Text>
             <View style={styles.extraStatInfo}>
-              <Text style={[styles.extraStatLabel, { color: theme.textSecondary }]}>{t.pressure}</Text>
+              <Text style={[styles.extraStatLabel, { color: theme.textSecondary }]}>{translations.pressure}</Text>
               <Text style={[styles.extraStatValue, { color: theme.text }]}>{weather.pressure} hPa</Text>
             </View>
           </View>
@@ -146,7 +146,7 @@ const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
           <View style={styles.extraStatRow}>
             <Text style={styles.extraStatIcon}>☁️</Text>
             <View style={styles.extraStatInfo}>
-              <Text style={[styles.extraStatLabel, { color: theme.textSecondary }]}>{t.cloudCover}</Text>
+              <Text style={[styles.extraStatLabel, { color: theme.textSecondary }]}>{translations.cloudCover}</Text>
               <Text style={[styles.extraStatValue, { color: theme.text }]}>{weather.cloudCover}%</Text>
             </View>
           </View>
