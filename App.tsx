@@ -41,69 +41,69 @@ const WeatherAnimation = lazy(() =>
 
 function WeatherApp() {
   const { settings, convertTemperature, convertWindSpeed, getTemperatureSymbol, getWindSpeedSymbol } = useSettings();
-  const t = getTranslations(settings.language);
+  const translations = getTranslations(settings.language);
   
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | undefined>();
-  const [searchVisible, setSearchVisible] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [lastUpdatedTime, setLastUpdatedTime] = useState<Date | undefined>();
+  const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
+  const [isAppReady, setIsAppReady] = useState(false);
 
   // Calculate theme values - all hooks must be called unconditionally
-  const condition = useMemo(() => {
+  const weatherCondition = useMemo(() => {
     if (!weatherData) return 'clear' as const;
     return getWeatherCondition(weatherData.current.weatherCode);
   }, [weatherData]);
   
-  const isDay = useMemo(() => {
+  const isDaytime = useMemo(() => {
     if (settings.themeMode === 'light') return true;
     if (settings.themeMode === 'dark') return false;
     return weatherData?.current.isDay ?? true;
   }, [settings.themeMode, weatherData?.current?.isDay]);
   
-  const theme = useMemo(() => getThemeColors(condition, isDay), [condition, isDay]);
-  const gradientColors = useMemo(() => getGradientColors(condition, isDay), [condition, isDay]);
+  const currentTheme = useMemo(() => getThemeColors(weatherCondition, isDaytime), [weatherCondition, isDaytime]);
+  const backgroundGradientColors = useMemo(() => getGradientColors(weatherCondition, isDaytime), [weatherCondition, isDaytime]);
 
   const loadWeatherForLocation = useCallback(async (location: LocationData, forceRefresh = false) => {
     try {
-      const data = await fetchWeatherData(location.latitude, location.longitude, forceRefresh);
+      const fetchedWeatherData = await fetchWeatherData(location.latitude, location.longitude, forceRefresh);
       setWeatherData({
-        ...data,
+        ...fetchedWeatherData,
         location,
       });
-      setLastUpdated(new Date());
-      setError(null);
+      setLastUpdatedTime(new Date());
+      setErrorMessage(null);
 
       // Save location to storage (don't await - fire and forget)
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(location)).catch(() => {});
     } catch (err) {
       console.error('Weather fetch error:', err);
-      setError(t.errorWeatherFetch);
+      setErrorMessage(translations.errorWeatherFetch);
     }
-  }, [t.errorWeatherFetch]);
+  }, [translations.errorWeatherFetch]);
 
   const loadCurrentLocation = useCallback(async () => {
     try {
       // Start location permission request
-      const permissionPromise = Location.requestForegroundPermissionsAsync();
+      const locationPermissionPromise = Location.requestForegroundPermissionsAsync();
       
       // Preload cache in parallel
-      const cachePromise = cacheManager.preload();
+      const cachePreloadPromise = cacheManager.preload();
       
       // Load saved location in parallel
-      const savedLocationPromise = AsyncStorage.getItem(STORAGE_KEY);
+      const savedLocationDataPromise = AsyncStorage.getItem(STORAGE_KEY);
       
       // Wait for permission
-      const { status } = await permissionPromise;
-      await cachePromise;
+      const { status: permissionStatus } = await locationPermissionPromise;
+      await cachePreloadPromise;
       
-      if (status !== 'granted') {
-        const savedLocation = await savedLocationPromise;
-        if (savedLocation) {
-          const location = JSON.parse(savedLocation);
-          await loadWeatherForLocation(location);
+      if (permissionStatus !== 'granted') {
+        const savedLocationData = await savedLocationDataPromise;
+        if (savedLocationData) {
+          const parsedLocation = JSON.parse(savedLocationData);
+          await loadWeatherForLocation(parsedLocation);
         } else {
           // Default to Istanbul
           await loadWeatherForLocation({
@@ -117,65 +117,65 @@ function WeatherApp() {
       }
 
       // Get position with lower accuracy for faster response
-      const position = await Location.getCurrentPositionAsync({
+      const currentPosition = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Low, // Faster than Balanced
       });
 
       // Start weather fetch immediately, geocode in parallel
-      const weatherPromise = fetchWeatherData(
-        position.coords.latitude, 
-        position.coords.longitude
+      const weatherDataPromise = fetchWeatherData(
+        currentPosition.coords.latitude, 
+        currentPosition.coords.longitude
       );
       
-      const geocodePromise = reverseGeocode(
-        position.coords.latitude,
-        position.coords.longitude
+      const reverseGeocodePromise = reverseGeocode(
+        currentPosition.coords.latitude,
+        currentPosition.coords.longitude
       );
 
       // Wait for both in parallel
-      const [weatherResult, locationName] = await Promise.all([
-        weatherPromise,
-        geocodePromise,
+      const [fetchedWeatherResult, resolvedLocationName] = await Promise.all([
+        weatherDataPromise,
+        reverseGeocodePromise,
       ]);
 
       setWeatherData({
-        ...weatherResult,
+        ...fetchedWeatherResult,
         location: {
-          name: locationName,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
+          name: resolvedLocationName,
+          latitude: currentPosition.coords.latitude,
+          longitude: currentPosition.coords.longitude,
         },
       });
-      setLastUpdated(new Date());
-      setError(null);
+      setLastUpdatedTime(new Date());
+      setErrorMessage(null);
 
       // Save location (fire and forget)
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({
-        name: locationName,
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
+        name: resolvedLocationName,
+        latitude: currentPosition.coords.latitude,
+        longitude: currentPosition.coords.longitude,
       })).catch(() => {});
 
     } catch (err) {
       console.error('Location error:', err);
-      const savedLocation = await AsyncStorage.getItem(STORAGE_KEY);
-      if (savedLocation) {
-        const location = JSON.parse(savedLocation);
-        await loadWeatherForLocation(location);
+      const savedLocationData = await AsyncStorage.getItem(STORAGE_KEY);
+      if (savedLocationData) {
+        const parsedLocation = JSON.parse(savedLocationData);
+        await loadWeatherForLocation(parsedLocation);
       } else {
-        setError(t.errorLocation);
+        setErrorMessage(translations.errorLocation);
       }
     }
-  }, [loadWeatherForLocation, t.errorLocation]);
+  }, [loadWeatherForLocation, translations.errorLocation]);
 
   const initializeApp = useCallback(async () => {
-    setLoading(true);
+    setIsLoading(true);
     await loadCurrentLocation();
-    setLoading(false);
+    setIsLoading(false);
     
     // Mark as ready after interactions complete
     InteractionManager.runAfterInteractions(() => {
-      setIsReady(true);
+      setIsAppReady(true);
     });
   }, [loadCurrentLocation]);
 
@@ -183,18 +183,18 @@ function WeatherApp() {
     initializeApp();
   }, []);
 
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
     if (weatherData?.location) {
       await loadWeatherForLocation(weatherData.location, true); // Force refresh
     } else {
       await loadCurrentLocation();
     }
-    setRefreshing(false);
+    setIsRefreshing(false);
   }, [weatherData?.location, loadWeatherForLocation, loadCurrentLocation]);
 
   const handleLocationSelect = useCallback(async (location: GeocodingResult | LocationData) => {
-    setLoading(true);
+    setIsLoading(true);
     await loadWeatherForLocation({
       name: location.name,
       latitude: location.latitude,
@@ -202,29 +202,29 @@ function WeatherApp() {
       country: location.country,
       admin1: location.admin1,
     });
-    setLoading(false);
+    setIsLoading(false);
   }, [loadWeatherForLocation]);
 
-  const handleLocationButtonPress = useCallback(async () => {
-    setLoading(true);
+  const handleCurrentLocationButtonPress = useCallback(async () => {
+    setIsLoading(true);
     await loadCurrentLocation();
-    setLoading(false);
+    setIsLoading(false);
   }, [loadCurrentLocation]);
 
-  const handleSearchClose = useCallback(() => {
-    setSearchVisible(false);
+  const handleSearchModalClose = useCallback(() => {
+    setIsSearchModalVisible(false);
   }, []);
 
-  const handleSearchOpen = useCallback(() => {
-    setSearchVisible(true);
+  const handleSearchModalOpen = useCallback(() => {
+    setIsSearchModalVisible(true);
   }, []);
 
-  if (loading) {
+  if (isLoading) {
     return <LoadingScreen />;
   }
 
-  if (error && !weatherData) {
-    return <ErrorScreen message={error} onRetry={initializeApp} />;
+  if (errorMessage && !weatherData) {
+    return <ErrorScreen message={errorMessage} onRetry={initializeApp} />;
   }
 
   if (!weatherData) {
@@ -233,7 +233,7 @@ function WeatherApp() {
 
   return (
     <NavigationContainer>
-      <LinearGradient colors={gradientColors as any} style={styles.container}>
+      <LinearGradient colors={backgroundGradientColors as any} style={styles.container}>
         <StatusBar
           barStyle="light-content"
           backgroundColor="transparent"
@@ -241,27 +241,27 @@ function WeatherApp() {
         />
         
         {/* Lazy load animation - only after ready */}
-        {isReady && (
+        {isAppReady && (
           <Suspense fallback={null}>
-            <WeatherAnimation condition={condition} isDay={isDay} />
+            <WeatherAnimation condition={weatherCondition} isDay={isDaytime} />
           </Suspense>
         )}
         
         <View style={styles.safeArea}>
           <Header
-            onSearchPress={handleSearchOpen}
-            onLocationPress={handleLocationButtonPress}
-            theme={theme}
-            lastUpdated={lastUpdated}
+            onSearchPress={handleSearchModalOpen}
+            onLocationPress={handleCurrentLocationButtonPress}
+            theme={currentTheme}
+            lastUpdated={lastUpdatedTime}
             language={settings.language}
           />
 
           <TabNavigator
             weatherData={weatherData}
-            theme={theme}
+            theme={currentTheme}
             settings={settings}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
             onLocationSelect={handleLocationSelect}
             convertTemperature={convertTemperature}
             convertWindSpeed={convertWindSpeed}
@@ -270,13 +270,13 @@ function WeatherApp() {
           />
         </View>
 
-        {searchVisible && (
+        {isSearchModalVisible && (
           <Suspense fallback={null}>
             <LocationSearch
-              visible={searchVisible}
-              onClose={handleSearchClose}
+              visible={isSearchModalVisible}
+              onClose={handleSearchModalClose}
               onLocationSelect={handleLocationSelect}
-              theme={theme}
+              theme={currentTheme}
               language={settings.language}
             />
           </Suspense>

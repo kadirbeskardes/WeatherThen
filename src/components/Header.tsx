@@ -19,16 +19,16 @@ const HeaderComponent: React.FC<HeaderProps> = ({
   lastUpdated,
   language,
 }) => {
-  const t = useMemo(() => getTranslations(language), [language]);
+  const translations = useMemo(() => getTranslations(language), [language]);
   
-  const updateTimeText = useMemo(() => {
+  const lastUpdateTimeText = useMemo(() => {
     if (!lastUpdated) return '';
     const now = new Date();
-    const diff = Math.floor((now.getTime() - lastUpdated.getTime()) / 60000);
-    if (diff < 1) return t.updatedNow;
-    if (diff < 60) return `${diff} ${t.updatedMinutesAgo}`;
+    const minutesSinceUpdate = Math.floor((now.getTime() - lastUpdated.getTime()) / 60000);
+    if (minutesSinceUpdate < 1) return translations.updatedNow;
+    if (minutesSinceUpdate < 60) return `${minutesSinceUpdate} ${translations.updatedMinutesAgo}`;
     return lastUpdated.toLocaleTimeString(language === 'tr' ? 'tr-TR' : 'en-US', { hour: '2-digit', minute: '2-digit' });
-  }, [lastUpdated, t, language]);
+  }, [lastUpdated, translations, language]);
 
   return (
     <View style={styles.container}>
@@ -39,7 +39,7 @@ const HeaderComponent: React.FC<HeaderProps> = ({
       {lastUpdated && (
         <View style={styles.updateInfo}>
           <Text style={[styles.updateText, { color: theme.textSecondary }]}>
-            {updateTimeText}
+            {lastUpdateTimeText}
           </Text>
         </View>
       )}
