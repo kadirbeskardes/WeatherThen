@@ -13,7 +13,7 @@ import { ThemeColors } from '../utils/themeUtils';
 import { useSettings } from '../context/SettingsContext';
 import { usePremium } from '../context/PremiumContext';
 import { getTranslations } from '../utils/translations';
-import { TemperatureUnit, WindSpeedUnit, Language, ThemeMode } from '../types/settings';
+import { TemperatureUnit, WindSpeedUnit, PressureUnit, Language, ThemeMode } from '../types/settings';
 import { WidgetPreviewScreen } from './WidgetPreviewScreen';
 import { PremiumPaywall, PremiumBadge } from '../components';
 
@@ -63,6 +63,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ theme }) => {
 
   const handleWindSpeedChange = (unit: WindSpeedUnit) => {
     updateSettings({ windSpeedUnit: unit });
+  };
+
+  const handlePressureChange = (unit: PressureUnit) => {
+    updateSettings({ pressureUnit: unit });
   };
 
   const handleLanguageChange = (language: Language) => {
@@ -219,6 +223,36 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ theme }) => {
         </View>
       </View>
 
+      {/* Pressure Unit */}
+      <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionIcon}>🌡️</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            {t.pressureUnit}
+          </Text>
+        </View>
+        <View style={styles.optionsRow}>
+          <OptionButton
+            label={t.hPa}
+            selected={settings.pressureUnit === 'hPa'}
+            onPress={() => handlePressureChange('hPa')}
+            theme={theme}
+          />
+          <OptionButton
+            label={t.inHg}
+            selected={settings.pressureUnit === 'inHg'}
+            onPress={() => handlePressureChange('inHg')}
+            theme={theme}
+          />
+          <OptionButton
+            label={t.mmHg}
+            selected={settings.pressureUnit === 'mmHg'}
+            onPress={() => handlePressureChange('mmHg')}
+            theme={theme}
+          />
+        </View>
+      </View>
+
       {/* Theme */}
       <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
         <View style={styles.sectionHeader}>
@@ -318,7 +352,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ theme }) => {
       <View style={[styles.infoSection, { borderTopColor: theme.cardBorder }]}>
         <Text style={styles.appIcon}>🌤️</Text>
         <Text style={[styles.appName, { color: theme.text }]}>WeatherThen</Text>
-        <Text style={[styles.appVersion, { color: theme.textSecondary }]}>v0.3.3</Text>
+        <Text style={[styles.appVersion, { color: theme.textSecondary }]}>v0.3.4</Text>
         <Text style={[styles.poweredBy, { color: theme.textSecondary }]}>
           {t.poweredBy}
         </Text>

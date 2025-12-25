@@ -1,14 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppSettings, defaultSettings, TemperatureUnit, WindSpeedUnit, Language, ThemeMode } from '../types/settings';
+import { AppSettings, defaultSettings, TemperatureUnit, WindSpeedUnit, PressureUnit, Language, ThemeMode } from '../types/settings';
 
 interface SettingsContextType {
   settings: AppSettings;
   updateSettings: (newSettings: Partial<AppSettings>) => Promise<void>;
   convertTemperature: (celsius: number) => number;
   convertWindSpeed: (kmh: number) => number;
+  convertPressure: (hPa: number) => number;
   getTemperatureSymbol: () => string;
   getWindSpeedSymbol: () => string;
+  getPressureSymbol: () => string;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -38,6 +40,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           windSpeedUnit: ['kmh', 'mph', 'ms'].includes(parsed.windSpeedUnit)
             ? parsed.windSpeedUnit
             : defaultSettings.windSpeedUnit,
+          pressureUnit: ['hPa', 'inHg', 'mmHg'].includes(parsed.pressureUnit)
+            ? parsed.pressureUnit
+            : defaultSettings.pressureUnit,
           language: ['tr', 'en'].includes(parsed.language)
             ? parsed.language
             : defaultSettings.language,
@@ -47,6 +52,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           notifications: typeof parsed.notifications === 'boolean'
             ? parsed.notifications
             : defaultSettings.notifications,
+          hourFormat24: typeof parsed.hourFormat24 === 'boolean'
+            ? parsed.hourFormat24
+            : defaultSettings.hourFormat24,
         };
         
         setSettings(validatedSettings);
@@ -91,6 +99,17 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     }
   }, [settings.windSpeedUnit]);
 
+  const convertPressure = useCallback((hPa: number): number => {
+    switch (settings.pressureUnit) {
+      case 'inHg':
+        return Math.round(hPa * 0.02953 * 100) / 100;
+      case 'mmHg':
+        return Math.round(hPa * 0.75006);
+      default:
+        return hPa;
+    }
+  }, [settings.pressureUnit]);
+
   const getTemperatureSymbol = useCallback((): string => {
     return settings.temperatureUnit === 'fahrenheit' ? '°F' : '°C';
   }, [settings.temperatureUnit]);
@@ -102,9 +121,20 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       case 'ms':
         return 'm/s';
       default:
-        return 'km/s';
+        return 'km/h';
     }
   }, [settings.windSpeedUnit]);
+
+  const getPressureSymbol = useCallback((): string => {
+    switch (settings.pressureUnit) {
+      case 'inHg':
+        return 'inHg';
+      case 'mmHg':
+        return 'mmHg';
+      default:
+        return 'hPa';
+    }
+  }, [settings.pressureUnit]);
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
@@ -112,9 +142,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     updateSettings,
     convertTemperature,
     convertWindSpeed,
+    convertPressure,
     getTemperatureSymbol,
     getWindSpeedSymbol,
-  }), [settings, updateSettings, convertTemperature, convertWindSpeed, getTemperatureSymbol, getWindSpeedSymbol]);
+    getPressureSymbol,
+  }), [settings, updateSettings, convertTemperature, convertWindSpeed, convertPressure, getTemperatureSymbol, getWindSpeedSymbol, getPressureSymbol]);
 
   if (!isLoaded) {
     return null;

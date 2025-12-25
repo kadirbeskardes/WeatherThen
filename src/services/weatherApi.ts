@@ -47,7 +47,8 @@ export async function fetchWeatherData(
       'cloud_cover',
       'pressure_msl',
       'uv_index',
-      'visibility'
+      'visibility',
+      'dew_point_2m'
     ].join(','),
     hourly: [
       'temperature_2m',
@@ -126,7 +127,8 @@ function parseCurrentWeather(data: any): CurrentWeather {
     cloudCover: data.cloud_cover,
     pressure: Math.round(data.pressure_msl),
     uvIndex: Math.round(data.uv_index),
-    visibility: Math.round(data.visibility / 1000) // Convert to km
+    visibility: Math.round(data.visibility / 1000), // Convert to km
+    dewpoint: Math.round(data.dew_point_2m)
   };
 }
 

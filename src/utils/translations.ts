@@ -36,6 +36,7 @@ interface Translations {
   // Settings
   temperatureUnit: string;
   windSpeedUnit: string;
+  pressureUnit: string;
   language: string;
   theme: string;
   notifications: string;
@@ -54,6 +55,16 @@ interface Translations {
   kmh: string;
   mph: string;
   ms: string;
+  hPa: string;
+  inHg: string;
+  mmHg: string;
+  
+  // Additional weather info
+  dewpoint: string;
+  humidityComfort: string;
+  humidityDry: string;
+  humidityComfortable: string;
+  humidityHumid: string;
   
   // UV Levels
   uvLow: string;
@@ -196,6 +207,7 @@ const tr: Translations = {
   
   temperatureUnit: 'Sıcaklık Birimi',
   windSpeedUnit: 'Rüzgar Hızı Birimi',
+  pressureUnit: 'Basınç Birimi',
   language: 'Dil',
   theme: 'Tema',
   notifications: 'Bildirimler',
@@ -209,9 +221,19 @@ const tr: Translations = {
   
   celsius: 'Celsius (°C)',
   fahrenheit: 'Fahrenheit (°F)',
-  kmh: 'km/s',
+  kmh: 'km/h',
   mph: 'mph',
   ms: 'm/s',
+  hPa: 'hPa',
+  inHg: 'inHg',
+  mmHg: 'mmHg',
+  
+  // Additional weather info
+  dewpoint: 'Çiy Noktası',
+  humidityComfort: 'Nem Konforu',
+  humidityDry: 'Kuru',
+  humidityComfortable: 'Konforlu',
+  humidityHumid: 'Nemli',
   
   uvLow: 'Düşük',
   uvModerate: 'Orta',
@@ -347,6 +369,7 @@ const en: Translations = {
   
   temperatureUnit: 'Temperature Unit',
   windSpeedUnit: 'Wind Speed Unit',
+  pressureUnit: 'Pressure Unit',
   language: 'Language',
   theme: 'Theme',
   notifications: 'Notifications',
@@ -363,6 +386,16 @@ const en: Translations = {
   kmh: 'km/h',
   mph: 'mph',
   ms: 'm/s',
+  hPa: 'hPa',
+  inHg: 'inHg',
+  mmHg: 'mmHg',
+  
+  // Additional weather info
+  dewpoint: 'Dewpoint',
+  humidityComfort: 'Humidity Comfort',
+  humidityDry: 'Dry',
+  humidityComfortable: 'Comfortable',
+  humidityHumid: 'Humid',
   
   uvLow: 'Low',
   uvModerate: 'Moderate',
