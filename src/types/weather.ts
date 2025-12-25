@@ -19,6 +19,7 @@ export interface CurrentWeather {
   pressure: number;
   uvIndex: number;
   visibility: number;
+  dewpoint: number;
 }
 
 export interface HourlyWeather {

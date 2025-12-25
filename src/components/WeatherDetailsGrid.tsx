@@ -3,6 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { ThemeColors } from '../utils/themeUtils';
 import { CurrentWeather } from '../types/weather';
 import { AppSettings } from '../types/settings';
+import { useSettings } from '../context/SettingsContext';
+import { getTranslations } from '../utils/translations';
 
 interface WeatherDetailsGridProps {
   current: CurrentWeather;
@@ -16,6 +18,7 @@ interface DetailItem {
   labelEn: string;
   value: string;
   subValue?: string;
+  subValueColor?: string;
 }
 
 export const WeatherDetailsGrid: React.FC<WeatherDetailsGridProps> = ({
@@ -23,12 +26,50 @@ export const WeatherDetailsGrid: React.FC<WeatherDetailsGridProps> = ({
   theme,
   settings,
 }) => {
+  const { convertPressure, getPressureSymbol, convertTemperature, getTemperatureSymbol } = useSettings();
+  const t = getTranslations(settings.language);
+
   const getFeelsLikeText = (): string => {
-    const feels = settings.temperatureUnit === 'fahrenheit'
-      ? Math.round(current.apparentTemperature * 9/5 + 32)
-      : Math.round(current.apparentTemperature);
-    const unit = settings.temperatureUnit === 'fahrenheit' ? '°F' : '°C';
+    const feels = convertTemperature(current.apparentTemperature);
+    const unit = getTemperatureSymbol();
     return `${feels}${unit}`;
+  };
+
+  const getDewpointText = (): string => {
+    const dewpoint = convertTemperature(current.dewpoint);
+    const unit = getTemperatureSymbol();
+    return `${dewpoint}${unit}`;
+  };
+
+  const getHumidityComfort = (): { text: string; color: string } => {
+    // Based on dewpoint for comfort assessment
+    const dewpoint = current.dewpoint;
+    if (dewpoint < 10) {
+      return {
+        text: t.humidityDry,
+        color: '#FFA726', // Orange
+      };
+    } else if (dewpoint < 16) {
+      return {
+        text: t.humidityComfortable,
+        color: '#66BB6A', // Green
+      };
+    } else if (dewpoint < 18) {
+      return {
+        text: t.humiditySlightlyHumid,
+        color: '#29B6F6', // Light Blue
+      };
+    } else if (dewpoint < 21) {
+      return {
+        text: t.humidityHumid,
+        color: '#5C6BC0', // Indigo
+      };
+    } else {
+      return {
+        text: t.humidityVeryHumid,
+        color: '#EF5350', // Red
+      };
+    }
   };
 
   const getPressureTrend = (): string => {
@@ -42,7 +83,7 @@ export const WeatherDetailsGrid: React.FC<WeatherDetailsGridProps> = ({
   };
 
   const getVisibilityText = (): string => {
-    const km = current.visibility / 1000;
+    const km = current.visibility;
     if (km >= 10) {
       return settings.language === 'tr' ? 'Mükemmel' : 'Excellent';
     } else if (km >= 5) {
@@ -69,6 +110,8 @@ export const WeatherDetailsGrid: React.FC<WeatherDetailsGridProps> = ({
     return settings.language === 'tr' ? 'Kapalı' : 'Overcast';
   };
 
+  const humidityComfort = getHumidityComfort();
+
   const details: DetailItem[] = [
     {
       icon: '🌡️',
@@ -81,24 +124,29 @@ export const WeatherDetailsGrid: React.FC<WeatherDetailsGridProps> = ({
       labelTr: 'Nem',
       labelEn: 'Humidity',
       value: `${current.humidity}%`,
-      subValue: current.humidity > 70 
-        ? (settings.language === 'tr' ? 'Yüksek' : 'High')
-        : current.humidity < 30 
-          ? (settings.language === 'tr' ? 'Düşük' : 'Low')
-          : (settings.language === 'tr' ? 'Normal' : 'Normal'),
+      subValue: humidityComfort.text,
+      subValueColor: humidityComfort.color,
+    },
+    {
+      icon: '🌫️',
+      labelTr: 'Çiy Noktası',
+      labelEn: 'Dewpoint',
+      value: getDewpointText(),
+      subValue: humidityComfort.text,
+      subValueColor: humidityComfort.color,
     },
     {
       icon: '🔵',
       labelTr: 'Basınç',
       labelEn: 'Pressure',
-      value: `${Math.round(current.pressure)} hPa`,
+      value: `${convertPressure(current.pressure)} ${getPressureSymbol()}`,
       subValue: getPressureTrend(),
     },
     {
       icon: '👁️',
       labelTr: 'Görüş',
       labelEn: 'Visibility',
-      value: `${(current.visibility / 1000).toFixed(1)} km`,
+      value: `${current.visibility} km`,
       subValue: getVisibilityText(),
     },
     {
@@ -148,7 +196,7 @@ export const WeatherDetailsGrid: React.FC<WeatherDetailsGridProps> = ({
               {item.value}
             </Text>
             {item.subValue && (
-              <Text style={[styles.subValue, { color: theme.accent }]}>
+              <Text style={[styles.subValue, { color: item.subValueColor || theme.accent }]}>
                 {item.subValue}
               </Text>
             )}

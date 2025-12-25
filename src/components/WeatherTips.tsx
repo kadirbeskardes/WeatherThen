@@ -45,6 +45,26 @@ export const WeatherTips: React.FC<WeatherTipsProps> = ({
     });
   }
   
+  // Feels like temperature difference tip
+  const feelsLikeDiff = Math.abs(current.apparentTemperature - current.temperature);
+  if (feelsLikeDiff >= 5) {
+    if (current.apparentTemperature > current.temperature) {
+      tips.push({
+        icon: '🌡️',
+        textTr: `Hissedilen sıcaklık ${Math.round(feelsLikeDiff)}° daha yüksek! Nem ve güneş etkisi var.`,
+        textEn: `Feels ${Math.round(feelsLikeDiff)}° warmer! Humidity and sun effect.`,
+        priority: 'medium',
+      });
+    } else {
+      tips.push({
+        icon: '🌬️',
+        textTr: `Hissedilen sıcaklık ${Math.round(feelsLikeDiff)}° daha düşük! Rüzgar etkisi var.`,
+        textEn: `Feels ${Math.round(feelsLikeDiff)}° colder! Wind chill effect.`,
+        priority: 'medium',
+      });
+    }
+  }
+  
   // Temperature tips
   const tempC = current.temperature;
   if (tempC >= 35) {
