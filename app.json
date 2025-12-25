@@ -46,6 +46,145 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Bulunduğunuz konumdaki hava durumunu göstermek için konumunuza ihtiyacımız var."
         }
+      ],
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "TemperatureSmall",
+              "label": "Sıcaklık (Küçük)",
+              "description": "Anlık sıcaklık ve hava durumu",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "none",
+              "widgetFeatures": "reconfigurable",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "TemperatureMedium",
+              "label": "Sıcaklık (Orta)",
+              "description": "Sıcaklık, nem ve rüzgar bilgisi",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal",
+              "widgetFeatures": "reconfigurable",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "TemperatureLarge",
+              "label": "Sıcaklık (Büyük)",
+              "description": "Detaylı sıcaklık ve saatlik tahmin",
+              "minWidth": "250dp",
+              "minHeight": "250dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 4,
+              "resizeMode": "horizontal|vertical",
+              "widgetFeatures": "reconfigurable",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "DailySummarySmall",
+              "label": "Günlük Özet (Küçük)",
+              "description": "Bugünün hava durumu özeti",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "none",
+              "widgetFeatures": "reconfigurable",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "DailySummaryMedium",
+              "label": "Günlük Özet (Orta)",
+              "description": "Bugünün detaylı hava durumu",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal",
+              "widgetFeatures": "reconfigurable",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "DailySummaryLarge",
+              "label": "Günlük Özet (Büyük)",
+              "description": "5 günlük hava durumu tahmini",
+              "minWidth": "250dp",
+              "minHeight": "250dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 4,
+              "resizeMode": "horizontal|vertical",
+              "widgetFeatures": "reconfigurable",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "PrecipitationSmall",
+              "label": "Yağış (Küçük)",
+              "description": "Yağış olasılığı",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "none",
+              "widgetFeatures": "reconfigurable",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "PrecipitationMedium",
+              "label": "Yağış (Orta)",
+              "description": "Detaylı yağış tahmini",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal",
+              "widgetFeatures": "reconfigurable",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "ComfortSmall",
+              "label": "Konfor (Küçük)",
+              "description": "Konfor indeksi ve UV seviyesi",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "none",
+              "widgetFeatures": "reconfigurable",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "MoonPhaseSmall",
+              "label": "Ay Fazı (Küçük)",
+              "description": "Mevcut ay fazı",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "none",
+              "widgetFeatures": "reconfigurable",
+              "updatePeriodMillis": 3600000
+            },
+            {
+              "name": "MoonPhaseMedium",
+              "label": "Ay Fazı (Orta)",
+              "description": "Ay fazı ve takvimi",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal",
+              "widgetFeatures": "reconfigurable",
+              "updatePeriodMillis": 3600000
+            }
+          ]
+        }
       ]
     ],
     "extra": {

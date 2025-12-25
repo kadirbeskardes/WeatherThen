@@ -12,3 +12,6 @@ export { MoonPhaseWidget } from './MoonPhaseWidget';
 export { LocationSwitcherWidget } from './LocationSwitcherWidget';
 
 export * from './types';
+
+// Android widget'ları
+export * from './android';
