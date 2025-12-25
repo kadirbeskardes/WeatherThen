@@ -11,6 +11,9 @@ import {
 import { CompleteWidgetData } from '../../services/widgetService';
 import { getWidgetTheme, WIDGET_THEMES, WidgetTheme } from '../types';
 
+// Sabit metinler
+const LOADING_TEXT = 'Yükleniyor...';
+
 // ColorProp tipi - hex veya rgba formatı
 type ColorProp = `#${string}` | `rgba(${number}, ${number}, ${number}, ${number})`;
 
@@ -84,10 +87,10 @@ const getWeatherEmoji = (code: number, isNight: boolean = false): string => {
   return emojis[code] || '☀️';
 };
 
-// Gece kontrolü
-const isNightTime = (): boolean => {
-  const hour = new Date().getHours();
-  return hour >= 20 || hour < 6;
+// Gece kontrolü - opsiyonel saat parametresi kabul eder
+const isNightTime = (hour?: number): boolean => {
+  const currentHour = hour ?? new Date().getHours();
+  return currentHour >= 20 || currentHour < 6;
 };
 
 interface WeatherWidgetProps {
@@ -111,7 +114,7 @@ export function TemperatureWidgetSmall({ data }: WeatherWidgetProps) {
           padding: 8,
         }}
       >
-        <TextWidget text="Yükleniyor..." style={{ fontSize: 12, color: '#ffffff' }} />
+        <TextWidget text={LOADING_TEXT} style={{ fontSize: 12, color: '#ffffff' }} />
       </FlexWidget>
     );
   }
@@ -197,7 +200,7 @@ export function TemperatureWidgetMedium({ data }: WeatherWidgetProps) {
           padding: 8,
         }}
       >
-        <TextWidget text="Yükleniyor..." style={{ fontSize: 14, color: '#ffffff' }} />
+        <TextWidget text={LOADING_TEXT} style={{ fontSize: 14, color: '#ffffff' }} />
       </FlexWidget>
     );
   }
@@ -312,7 +315,7 @@ export function TemperatureWidgetLarge({ data }: WeatherWidgetProps) {
           padding: 8,
         }}
       >
-        <TextWidget text="Yükleniyor..." style={{ fontSize: 14, color: '#ffffff' }} />
+        <TextWidget text={LOADING_TEXT} style={{ fontSize: 14, color: '#ffffff' }} />
       </FlexWidget>
     );
   }
@@ -413,7 +416,7 @@ export function TemperatureWidgetLarge({ data }: WeatherWidgetProps) {
               style={{ fontSize: 10, color: theme.textSecondary }}
             />
             <TextWidget
-              text={getWeatherEmoji(hour.conditionCode, parseInt(hour.hour) >= 20 || parseInt(hour.hour) < 6)}
+              text={getWeatherEmoji(hour.conditionCode, isNightTime(parseInt(hour.hour)))}
               style={{ fontSize: 16, marginTop: 4, marginBottom: 4 }}
             />
             <TextWidget
@@ -444,7 +447,7 @@ export function DailySummaryWidgetSmall({ data }: WeatherWidgetProps) {
           padding: 8,
         }}
       >
-        <TextWidget text="Yükleniyor..." style={{ fontSize: 12, color: '#ffffff' }} />
+        <TextWidget text={LOADING_TEXT} style={{ fontSize: 12, color: '#ffffff' }} />
       </FlexWidget>
     );
   }
@@ -518,7 +521,7 @@ export function DailySummaryWidgetMedium({ data }: WeatherWidgetProps) {
           padding: 8,
         }}
       >
-        <TextWidget text="Yükleniyor..." style={{ fontSize: 14, color: '#ffffff' }} />
+        <TextWidget text={LOADING_TEXT} style={{ fontSize: 14, color: '#ffffff' }} />
       </FlexWidget>
     );
   }
@@ -636,7 +639,7 @@ export function DailySummaryWidgetLarge({ data }: WeatherWidgetProps) {
           padding: 8,
         }}
       >
-        <TextWidget text="Yükleniyor..." style={{ fontSize: 14, color: '#ffffff' }} />
+        <TextWidget text={LOADING_TEXT} style={{ fontSize: 14, color: '#ffffff' }} />
       </FlexWidget>
     );
   }
@@ -798,7 +801,7 @@ export function PrecipitationWidgetSmall({ data }: WeatherWidgetProps) {
           padding: 8,
         }}
       >
-        <TextWidget text="Yükleniyor..." style={{ fontSize: 12, color: '#ffffff' }} />
+        <TextWidget text={LOADING_TEXT} style={{ fontSize: 12, color: '#ffffff' }} />
       </FlexWidget>
     );
   }
@@ -877,7 +880,7 @@ export function PrecipitationWidgetMedium({ data }: WeatherWidgetProps) {
           padding: 8,
         }}
       >
-        <TextWidget text="Yükleniyor..." style={{ fontSize: 14, color: '#ffffff' }} />
+        <TextWidget text={LOADING_TEXT} style={{ fontSize: 14, color: '#ffffff' }} />
       </FlexWidget>
     );
   }
@@ -1012,7 +1015,7 @@ export function ComfortWidgetSmall({ data }: WeatherWidgetProps) {
           padding: 8,
         }}
       >
-        <TextWidget text="Yükleniyor..." style={{ fontSize: 12, color: '#ffffff' }} />
+        <TextWidget text={LOADING_TEXT} style={{ fontSize: 12, color: '#ffffff' }} />
       </FlexWidget>
     );
   }
@@ -1105,7 +1108,7 @@ export function MoonPhaseWidgetSmall({ data }: WeatherWidgetProps) {
           padding: 8,
         }}
       >
-        <TextWidget text="Yükleniyor..." style={{ fontSize: 12, color: '#ffffff' }} />
+        <TextWidget text={LOADING_TEXT} style={{ fontSize: 12, color: '#ffffff' }} />
       </FlexWidget>
     );
   }
@@ -1175,7 +1178,7 @@ export function MoonPhaseWidgetMedium({ data }: WeatherWidgetProps) {
           padding: 8,
         }}
       >
-        <TextWidget text="Yükleniyor..." style={{ fontSize: 14, color: '#ffffff' }} />
+        <TextWidget text={LOADING_TEXT} style={{ fontSize: 14, color: '#ffffff' }} />
       </FlexWidget>
     );
   }
