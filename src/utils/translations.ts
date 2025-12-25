@@ -64,7 +64,9 @@ interface Translations {
   humidityComfort: string;
   humidityDry: string;
   humidityComfortable: string;
+  humiditySlightlyHumid: string;
   humidityHumid: string;
+  humidityVeryHumid: string;
   
   // UV Levels
   uvLow: string;
@@ -233,7 +235,9 @@ const tr: Translations = {
   humidityComfort: 'Nem Konforu',
   humidityDry: 'Kuru',
   humidityComfortable: 'Konforlu',
+  humiditySlightlyHumid: 'Biraz Nemli',
   humidityHumid: 'Nemli',
+  humidityVeryHumid: 'Çok Nemli',
   
   uvLow: 'Düşük',
   uvModerate: 'Orta',
@@ -395,7 +399,9 @@ const en: Translations = {
   humidityComfort: 'Humidity Comfort',
   humidityDry: 'Dry',
   humidityComfortable: 'Comfortable',
+  humiditySlightlyHumid: 'Slightly Humid',
   humidityHumid: 'Humid',
+  humidityVeryHumid: 'Very Humid',
   
   uvLow: 'Low',
   uvModerate: 'Moderate',

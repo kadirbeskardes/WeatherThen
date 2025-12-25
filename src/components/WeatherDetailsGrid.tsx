@@ -4,6 +4,7 @@ import { ThemeColors } from '../utils/themeUtils';
 import { CurrentWeather } from '../types/weather';
 import { AppSettings } from '../types/settings';
 import { useSettings } from '../context/SettingsContext';
+import { getTranslations } from '../utils/translations';
 
 interface WeatherDetailsGridProps {
   current: CurrentWeather;
@@ -26,6 +27,7 @@ export const WeatherDetailsGrid: React.FC<WeatherDetailsGridProps> = ({
   settings,
 }) => {
   const { convertPressure, getPressureSymbol, convertTemperature, getTemperatureSymbol } = useSettings();
+  const t = getTranslations(settings.language);
 
   const getFeelsLikeText = (): string => {
     const feels = convertTemperature(current.apparentTemperature);
@@ -44,27 +46,27 @@ export const WeatherDetailsGrid: React.FC<WeatherDetailsGridProps> = ({
     const dewpoint = current.dewpoint;
     if (dewpoint < 10) {
       return {
-        text: settings.language === 'tr' ? 'Kuru' : 'Dry',
+        text: t.humidityDry,
         color: '#FFA726', // Orange
       };
     } else if (dewpoint < 16) {
       return {
-        text: settings.language === 'tr' ? 'Konforlu' : 'Comfortable',
+        text: t.humidityComfortable,
         color: '#66BB6A', // Green
       };
     } else if (dewpoint < 18) {
       return {
-        text: settings.language === 'tr' ? 'Biraz Nemli' : 'Slightly Humid',
+        text: t.humiditySlightlyHumid,
         color: '#29B6F6', // Light Blue
       };
     } else if (dewpoint < 21) {
       return {
-        text: settings.language === 'tr' ? 'Nemli' : 'Humid',
+        text: t.humidityHumid,
         color: '#5C6BC0', // Indigo
       };
     } else {
       return {
-        text: settings.language === 'tr' ? 'Çok Nemli' : 'Very Humid',
+        text: t.humidityVeryHumid,
         color: '#EF5350', // Red
       };
     }
