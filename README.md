@@ -1,178 +1,136 @@
-# 🌤️ WeatherThen
+# WeatherThen 🌤️
 
-<p align="center">
-  <img src="https://img.shields.io/badge/React%20Native-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React Native"/>
-  <img src="https://img.shields.io/badge/Expo-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo"/>
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
-</p>
+**WeatherThen** is a sophisticated, feature-rich weather application built with **React Native** and **Expo**. It provides accurate real-time weather data, detailed forecasts, and beautiful visualizations wrapped in a modern, user-friendly interface. Designed to offer more than just the temperature, WeatherThen delivers deep insights into weather conditions including air quality, solar cycles, and lifestyle suggestions.
 
-**WeatherThen**, React Native ve Expo ile geliştirilmiş, modern ve kullanıcı dostu bir hava durumu uygulamasıdır. Dinamik temalar, animasyonlar ve Android widget desteği ile kapsamlı bir hava durumu deneyimi sunar.
+## 🚀 Key Features
 
-## 📋 İçindekiler
+### 🌍 **Comprehensive Weather Data**
+- **Real-Time Conditions:** Instant access to temperature, humidity, pressure, wind speed, and more.
+- **Forecasts:** Detailed hourly predictions and 7-day extended forecasts.
+- **Advanced Metrics:** Air quality index, UV index, dew point, and visibility.
 
-- [Özellikler](#-özellikler)
-- [Ekran Görüntüleri](#-ekran-görüntüleri)
-- [Teknolojiler](#-teknolojiler)
-- [Kurulum](#-kurulum)
-- [Yapılandırma](#-yapılandırma)
-- [Katkıda Bulunma](#-katkıda-bulunma)
+### 🎨 **Immersive Visuals**
+- **Dynamic Backgrounds:** Beautiful animations that reflect current weather conditions and time of day (Day/Night cycles).
+- **Interactive Charts:** Visual representations of temperature trends, precipitation probability, and wind patterns.
+- **Sun & Moon:** Sun path tracking and detailed moon phase information.
 
-## ✨ Özellikler
+### 📍 **Location Services**
+- **Auto-Detection:** Automatically detects your current location for instant weather updates.
+- **Global Search:** Search and save any city worldwide.
+- **Favorites:** Manage a list of your favorite locations for quick access.
 
-- 🌍 **Konum Tabanlı Hava Durumu**: Otomatik konum algılama
-- 🔍 **Konum Arama**: Herhangi bir şehir için hava durumu sorgulama
-- 📱 **Tab Navigasyon**: Kolay gezinme için bottom tab navigator
-- 🎨 **Dinamik Temalar**: Hava durumuna göre değişen renk şemaları
-- 🌅 **Gündüz/Gece Modu**: Otomatik veya manuel tema seçimi
-- ⭐ **Favoriler**:  Sık kullanılan konumları kaydetme
-- 💎 **Premium Özellikler**: Gelişmiş özellikler için premium üyelik
-- 🔄 **Önbellek Yönetimi**: Performans için akıllı önbellekleme
-- 🌐 **Çoklu Dil Desteği**: Farklı dillerde kullanım
-- 📊 **Widget Desteği**: Android ana ekran widget'ı
-- 🌡️ **Birim Dönüşümü**: Celsius/Fahrenheit, km/h-mph dönüşümleri
-- ✨ **Hava Animasyonları**: Hava durumuna göre görsel animasyonlar
+### 📱 **Widgets (Android)**
+Stay updated without opening the app using a variety of customizable home screen widgets:
+- **Temperature:** Small, Medium, and Large sizes.
+- **Daily Summary:** Get a quick overview of the day's outlook.
+- **Precipitation:** Keep an eye on rain/snow chances.
+- **Comfort & Moon Phase:** Specialized widgets for lifestyle details.
 
-## 🛠 Teknolojiler
-
-### Core
-- **React Native** `0.81.5` - Cross-platform mobil geliştirme
-- **Expo** `54.0` - React Native framework
-- **TypeScript** `5.9` - Tip güvenli JavaScript
-
-### Navigation & UI
-- **React Navigation** `7.x` - Navigasyon yönetimi
-- **Expo Linear Gradient** - Gradient arka planlar
-- **Expo Blur** - Blur efektleri
-- **React Native Reanimated** - Performanslı animasyonlar
-
-### State & Storage
-- **React Context API** - Global state yönetimi
-- **AsyncStorage** - Yerel veri depolama
-
-### Location & Weather
-- **Expo Location** - Konum servisleri
-- **Weather API** - Hava durumu verileri
-
-### Platform Specific
-- **React Native Android Widget** - Android widget desteği
-
-## 🚀 Kurulum
-
-### Gereksinimler
-- Node.js 18+
-- npm veya yarn
-- Expo CLI
-- iOS Simulator (Mac) veya Android Emulator
-
-### Adımlar
-
-```bash
-# Repository'yi klonlayın
-git clone https://github.com/kadirbeskardes/WeatherThen.git
-cd WeatherThen
-
-# Bağımlılıkları yükleyin
-npm install
-
-# Expo ile başlatın
-npx expo start
-```
-
-### Platform Spesifik Başlatma
-
-```bash
-# Android için
-npm run android
-
-# iOS için
-npm run ios
-
-# Web için
-npm run web
-```
-
-## 📁 Proje Yapısı
-
-```
-WeatherThen/
-├── App.tsx                     # Ana uygulama komponenti
-├── index.ts                    # Giriş noktası
-├── src/
-│   ├── components/            # Yeniden kullanılabilir UI bileşenleri
-│   │   ├── Header.tsx
-│   │   ├── LoadingScreen.tsx
-│   │   ├── ErrorScreen.tsx
-│   │   ├── LocationSearch.tsx
-│   │   └── WeatherAnimation.tsx
-│   ├── context/               # React Context providers
-│   │   ├── SettingsContext.tsx
-│   │   ├── FavoritesContext.tsx
-│   │   └── PremiumContext.tsx
-│   ├── navigation/            # Navigasyon yapılandırması
-│   │   └── TabNavigator.tsx
-│   ├── services/              # API servisleri
-│   │   └── weatherApi.ts
-│   ├── types/                 # TypeScript tip tanımları
-│   │   └── weather.ts
-│   └── utils/                 # Yardımcı fonksiyonlar
-│       ├── weatherUtils.ts
-│       ├── themeUtils.ts
-│       ├── translations.ts
-│       └── cache.ts
-├── assets/                    # Resimler ve fontlar
-├── docs/                      # Dokümantasyon
-├── scripts/                   # Build scriptleri
-└── app.json                   # Expo yapılandırması
-```
-
-## ⚙️ Yapılandırma
-
-### Environment Değişkenleri
-
-```env
-WEATHER_API_KEY=your_api_key_here
-```
-
-### Ayarlar
-
-Uygulama içinden yapılandırılabilir ayarlar: 
-- 🌡️ Sıcaklık birimi (Celsius/Fahrenheit)
-- 💨 Rüzgar hızı birimi (km/h, mph)
-- 🎨 Tema modu (Açık/Koyu/Otomatik)
-- 🌐 Dil seçimi
-
-## 🌈 Tema Sistemi
-
-Uygulama, hava durumuna göre dinamik olarak tema değiştirir:
-
-| Hava Durumu | Gündüz Renkleri | Gece Renkleri |
-|-------------|-----------------|---------------|
-| ☀️ Güneşli | Turuncu/Sarı | Lacivert |
-| ☁️ Bulutlu | Gri tonları | Koyu gri |
-| 🌧️ Yağmurlu | Mavi tonları | Koyu mavi |
-| ❄️ Karlı | Beyaz/Açık mavi | Gri/Mavi |
-
-## 📱 Widget Kullanımı (Android)
-
-1. Ana ekrana uzun basın
-2. Widget'lar'ı seçin
-3. WeatherThen widget'ını bulun
-4. Ana ekrana sürükleyin
-
-## 🤝 Katkıda Bulunma
-
-1. Fork edin
-2. Feature branch oluşturun (`git checkout -b feature/NewFeature`)
-3. Commit edin (`git commit -m 'Add NewFeature'`)
-4. Push edin (`git push origin feature/NewFeature`)
-5. Pull Request açın
-
-## 📄 Lisans
-
-MIT License
+### ⚙️ **Personalization & Tools**
+- **Themes:** Supports Light, Dark, and Auto modes (syncs with system or time of day).
+- **Units:** Customizable units for temperature (°C/°F) and wind speed (m/s, km/h, mph, knots).
+- **Multi-language:** Built-in support for multiple languages (including English and Turkish).
+- **Lifestyle Tips:** Clothing suggestions based on weather and "Feels Like" explanations.
 
 ---
 
-<p align="center">
-  🌤️ <strong>WeatherThen</strong> - Her zaman hava durumundan haberdar olun! 
-</p>
+## 🛠️ Tech Stack
+
+- **Framework:** [React Native](https://reactnative.dev/) (v0.81) via [Expo](https://expo.dev/) (SDK 54)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Navigation:** [React Navigation](https://reactnavigation.org/) (v7)
+- **State Management:** React Context API & Hooks
+- **Persistence:** [AsyncStorage](https://react-native-async-storage.github.io/async-storage/)
+- **UI & Animations:** 
+  - `react-native-reanimated`
+  - `expo-linear-gradient`
+  - `expo-blur`
+- **Native Modules:**
+  - `expo-location` (Geolocation)
+  - `react-native-android-widget` (Android Widgets)
+
+---
+
+## 📥 Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/WeatherThen.git
+   cd WeatherThen
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Start the development server**
+   ```bash
+   npx expo start
+   ```
+
+4. **Run on Device/Emulator**
+   - Press `a` for Android Emulator.
+   - Press `i` for iOS Simulator.
+   - Scan the QR code with the Expo Go app on your physical device.
+
+---
+
+## 📂 Project Structure
+
+```
+WeatherThen/
+├── App.tsx                 # Application entry point
+├── app.json                # Expo configuration
+├── src/
+│   ├── components/         # Reusable UI components (Charts, Cards, Modals)
+│   ├── context/            # React Context (Settings, Favorites, Premium)
+│   ├── navigation/         # Navigation configuration (Tabs, Stack)
+│   ├── screens/            # Main screens (Home, Forecast, Favorites, Settings)
+│   ├── services/           # API services (Weather, Geocoding)
+│   ├── types/              # TypeScript type definitions
+│   ├── utils/              # Helper functions (Formatting, Themes, Cache)
+│   └── widgets/            # Android Widget definitions and handlers
+└── assets/                 # Images, icons, and fonts
+```
+
+---
+
+## 📱 Usage
+
+### **Home Screen**
+- View current weather, hourly forecast, and key statistics.
+- Pull down to refresh data.
+- Tap on different cards for more details.
+
+### **Search & Favorites**
+- Tap the search icon or location name in the header to find new cities.
+- Save cities to your favorites for quick access via the Favorites tab.
+
+### **Settings**
+- Customize units (Metric/Imperial).
+- Change theme (Light/Dark).
+- Select language.
+
+### **Widgets**
+- Long press on your Android home screen -> Widgets -> WeatherThen.
+- Drag and drop your preferred widget style.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+1. Fork the project.
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4. Push to the branch (`git push origin feature/AmazingFeature`).
+5. Open a Pull Request.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
