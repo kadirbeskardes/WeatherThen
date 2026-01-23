@@ -13,6 +13,7 @@ import {
   PremiumPaywall,
   QuickStats,
   DayNightCycle,
+  LifestyleHub,
 } from '../components';
 import { WeatherData } from '../types/weather';
 import { ThemeColors } from '../utils/themeUtils';
@@ -99,6 +100,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         currentTime={new Date()}
         theme={theme}
         language={settings.language}
+      />
+
+      <LifestyleHub 
+        current={weatherData.current} 
+        daily={weatherData.daily[0]} 
       />
 
       <FeelsLikeExplainer

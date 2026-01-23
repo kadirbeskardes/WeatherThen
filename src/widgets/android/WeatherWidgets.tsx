@@ -20,6 +20,8 @@ type ColorProp = `#${string}` | `rgba(${number}, ${number}, ${number}, ${number}
 // Tema renklerini Android widget formatına dönüştür
 // rgba formatı desteklenmediği için hex'e dönüştür
 const toHex = (color: string): ColorProp => {
+  if (!color) return '#ffffff' as ColorProp;
+
   // Zaten hex ise direkt döndür
   if (color.startsWith('#')) {
     return color as ColorProp;

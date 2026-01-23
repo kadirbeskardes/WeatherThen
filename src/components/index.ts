@@ -29,6 +29,7 @@ export { WeatherAlerts } from './WeatherAlerts';
 export { WeekAtGlance } from './WeekAtGlance';
 export { QuickStats } from './QuickStats';
 export { DayNightCycle } from './DayNightCycle';
+export { LifestyleHub } from './LifestyleHub';
 export { WindDirectionIndicator } from './WindDirectionIndicator';
 
 // Premium components

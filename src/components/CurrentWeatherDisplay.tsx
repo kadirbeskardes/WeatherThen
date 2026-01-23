@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { CurrentWeather } from '../types/weather';
 import { getWeatherInfo, getUVIndexLevel } from '../utils/weatherUtils';
 import { ThemeColors } from '../utils/themeUtils';
@@ -75,6 +76,17 @@ const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
   const displayWindSpeed = useMemo(() => convertWindSpeed(weather.windSpeed), [weather.windSpeed, convertWindSpeed]);
   const windSpeedUnitSymbol = useMemo(() => getWindSpeedSymbol(), [getWindSpeedSymbol]);
 
+  const StatCard = ({ icon, value, label, valueColor, labelColor }: any) => (
+    <LinearGradient
+      colors={['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.05)']}
+      style={[styles.statCard, { borderColor: theme.cardBorder }]}
+    >
+      <Text style={styles.statIcon}>{icon}</Text>
+      <Text style={[styles.statValue, { color: valueColor || theme.text }]}>{value}</Text>
+      <Text style={[styles.statLabel, { color: labelColor || theme.textSecondary }]}>{label}</Text>
+    </LinearGradient>
+  );
+
   return (
     <View style={styles.container}>
       <Text style={[styles.location, { color: theme.text }]}>{locationName}</Text>
@@ -104,35 +116,34 @@ const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
       )}
 
       <View style={styles.statsContainer}>
-        <View style={[styles.statCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
-          <Text style={styles.statIcon}>💨</Text>
-          <Text style={[styles.statValue, { color: theme.text }]}>{displayWindSpeed} {windSpeedUnitSymbol}</Text>
-          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-            {translations.wind} {windDirectionLabel}
-          </Text>
-        </View>
-
-        <View style={[styles.statCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
-          <Text style={styles.statIcon}>💧</Text>
-          <Text style={[styles.statValue, { color: theme.text }]}>{weather.humidity}%</Text>
-          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{translations.humidity}</Text>
-        </View>
-
-        <View style={[styles.statCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
-          <Text style={styles.statIcon}>☀️</Text>
-          <Text style={[styles.statValue, { color: theme.text }]}>{weather.uvIndex}</Text>
-          <Text style={[styles.statLabel, { color: uvInfo.color }]}>{uvInfo.level}</Text>
-        </View>
-
-        <View style={[styles.statCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
-          <Text style={styles.statIcon}>👁️</Text>
-          <Text style={[styles.statValue, { color: theme.text }]}>{weather.visibility} km</Text>
-          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{translations.visibility}</Text>
-        </View>
+        <StatCard 
+          icon="💨" 
+          value={`${displayWindSpeed} ${windSpeedUnitSymbol}`} 
+          label={`${translations.wind} ${windDirectionLabel}`} 
+        />
+        <StatCard 
+          icon="💧" 
+          value={`${weather.humidity}%`} 
+          label={translations.humidity} 
+        />
+        <StatCard 
+          icon="☀️" 
+          value={weather.uvIndex} 
+          label={uvInfo.level} 
+          labelColor={uvInfo.color}
+        />
+        <StatCard 
+          icon="👁️" 
+          value={`${weather.visibility} km`} 
+          label={translations.visibility} 
+        />
       </View>
 
       <View style={styles.extraStatsContainer}>
-        <View style={[styles.extraStatCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+        <LinearGradient
+          colors={['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.02)']}
+          style={[styles.extraStatCard, { borderColor: theme.cardBorder }]}
+        >
           <View style={styles.extraStatRow}>
             <Text style={styles.extraStatIcon}>🌡️</Text>
             <View style={styles.extraStatInfo}>
@@ -140,9 +151,12 @@ const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
               <Text style={[styles.extraStatValue, { color: theme.text }]}>{weather.pressure} hPa</Text>
             </View>
           </View>
-        </View>
+        </LinearGradient>
 
-        <View style={[styles.extraStatCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+        <LinearGradient
+          colors={['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.02)']}
+          style={[styles.extraStatCard, { borderColor: theme.cardBorder }]}
+        >
           <View style={styles.extraStatRow}>
             <Text style={styles.extraStatIcon}>☁️</Text>
             <View style={styles.extraStatInfo}>
@@ -150,7 +164,7 @@ const CurrentWeatherDisplayComponent: React.FC<CurrentWeatherDisplayProps> = ({
               <Text style={[styles.extraStatValue, { color: theme.text }]}>{weather.cloudCover}%</Text>
             </View>
           </View>
-        </View>
+        </LinearGradient>
       </View>
     </View>
   );

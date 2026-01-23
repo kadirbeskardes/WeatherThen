@@ -21,14 +21,21 @@ interface HourCardProps {
 }
 
 // Memoized hour card component
-const HourCard = memo<HourCardProps>(({ hour, theme, settings, convertTemperature }) => {
+const HourCard = memo<HourCardProps & { isNow?: boolean }>(({ hour, theme, settings, convertTemperature, isNow }) => {
   const displayTemperature = useMemo(() => convertTemperature(hour.temperature), [hour.temperature, convertTemperature]);
   const weatherIcon = useMemo(() => getWeatherIcon(hour.weatherCode, hour.isDay), [hour.weatherCode, hour.isDay]);
-  const formattedTime = useMemo(() => formatHour(hour.time, settings.language, settings.hourFormat24), [hour.time, settings.language, settings.hourFormat24]);
+  const formattedTime = useMemo(() => isNow ? (settings.language === 'tr' ? 'Şimdi' : 'Now') : formatHour(hour.time, settings.language, settings.hourFormat24), [hour.time, settings.language, settings.hourFormat24, isNow]);
 
   return (
-    <View style={[styles.hourCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
-      <Text style={[styles.time, { color: theme.textSecondary }]}>{formattedTime}</Text>
+    <View style={[
+      styles.hourCard, 
+      { 
+        backgroundColor: isNow ? 'rgba(255,255,255,0.2)' : theme.card, 
+        borderColor: isNow ? 'rgba(255,255,255,0.5)' : theme.cardBorder,
+        borderWidth: isNow ? 1.5 : 1
+      }
+    ]}>
+      <Text style={[styles.time, { color: isNow ? '#FFF' : theme.textSecondary, fontWeight: isNow ? '700' : '500' }]}>{formattedTime}</Text>
       <Text style={styles.icon}>{weatherIcon}</Text>
       <Text style={[styles.temp, { color: theme.text }]}>{displayTemperature}°</Text>
       {hour.precipitationProbability > 0 && (
@@ -67,12 +74,13 @@ const HourlyForecastComponent: React.FC<HourlyForecastProps> = ({
   // Limit data to 24 hours
   const displayData = useMemo(() => hourlyData.slice(0, 24), [hourlyData]);
   
-  const renderItem = useCallback(({ item }: { item: HourlyWeather }) => (
+  const renderItem = useCallback(({ item, index }: { item: HourlyWeather; index: number }) => (
     <HourCard 
       hour={item} 
       theme={theme} 
       settings={settings} 
       convertTemperature={convertTemperature}
+      isNow={index === 0}
     />
   ), [theme, settings, convertTemperature]);
 
