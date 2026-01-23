@@ -352,7 +352,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ theme }) => {
       <View style={[styles.infoSection, { borderTopColor: theme.cardBorder }]}>
         <Text style={styles.appIcon}>🌤️</Text>
         <Text style={[styles.appName, { color: theme.text }]}>WeatherThen</Text>
-        <Text style={[styles.appVersion, { color: theme.textSecondary }]}>v0.3.4</Text>
+        <Text style={[styles.appVersion, { color: theme.textSecondary }]}>v0.3.5</Text>
         <Text style={[styles.poweredBy, { color: theme.textSecondary }]}>
           {t.poweredBy}
         </Text>
