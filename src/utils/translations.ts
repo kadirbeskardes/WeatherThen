@@ -185,6 +185,23 @@ interface Translations {
   temperatureLayer: string;
   cloudLayer: string;
   windLayer: string;
+  pressureLayer: string;
+  zoomIn: string;
+  zoomOut: string;
+  recenter: string;
+  legend: string;
+  showLegend: string;
+  hideLegend: string;
+  light: string;
+  moderate: string;
+  heavy: string;
+  cold: string;
+  warm: string;
+  hot: string;
+  calm: string;
+  strong: string;
+  low: string;
+  high: string;
 }
 
 const tr: Translations = {
@@ -357,6 +374,23 @@ const tr: Translations = {
   temperatureLayer: 'Sıcaklık',
   cloudLayer: 'Bulut',
   windLayer: 'Rüzgar',
+  pressureLayer: 'Basınç',
+  zoomIn: 'Yakınlaştır',
+  zoomOut: 'Uzaklaştır',
+  recenter: 'Konumuma Dön',
+  legend: 'Gösterge',
+  showLegend: 'Göstergeyi Göster',
+  hideLegend: 'Göstergeyi Gizle',
+  light: 'Hafif',
+  moderate: 'Orta',
+  heavy: 'Yoğun',
+  cold: 'Soğuk',
+  warm: 'Ilık',
+  hot: 'Sıcak',
+  calm: 'Sakin',
+  strong: 'Güçlü',
+  low: 'Düşük',
+  high: 'Yüksek',
 };
 
 const en: Translations = {
@@ -529,6 +563,23 @@ const en: Translations = {
   temperatureLayer: 'Temp',
   cloudLayer: 'Cloud',
   windLayer: 'Wind',
+  pressureLayer: 'Pressure',
+  zoomIn: 'Zoom In',
+  zoomOut: 'Zoom Out',
+  recenter: 'My Location',
+  legend: 'Legend',
+  showLegend: 'Show Legend',
+  hideLegend: 'Hide Legend',
+  light: 'Light',
+  moderate: 'Moderate',
+  heavy: 'Heavy',
+  cold: 'Cold',
+  warm: 'Warm',
+  hot: 'Hot',
+  calm: 'Calm',
+  strong: 'Strong',
+  low: 'Low',
+  high: 'High',
 };
 
 const translations: Record<Language, Translations> = {

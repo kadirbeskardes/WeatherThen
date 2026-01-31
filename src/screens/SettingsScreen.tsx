@@ -107,7 +107,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ theme }) => {
               <View style={styles.premiumActiveInfo}>
                 <Text style={styles.premiumActiveTitle}>{t.premiumMember}</Text>
                 <Text style={styles.premiumActiveSubtitle}>
-                  {premiumStatus.expiresAt 
+                  {premiumStatus.expiresAt
                     ? `${t.premiumExpires}: ${premiumStatus.expiresAt.toLocaleDateString(settings.language === 'tr' ? 'tr-TR' : 'en-US')}`
                     : settings.language === 'tr' ? 'Ömür boyu erişim' : 'Lifetime access'}
                 </Text>
@@ -116,7 +116,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ theme }) => {
           </LinearGradient>
         </View>
       ) : (
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.section, { backgroundColor: theme.card, borderColor: theme.cardBorder, overflow: 'hidden' }]}
           onPress={() => setShowPremiumPaywall(true)}
           activeOpacity={0.8}
@@ -327,7 +327,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ theme }) => {
 
       {/* Widgets */}
       <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.widgetButton}
           onPress={() => setShowWidgetPreview(true)}
         >
@@ -338,8 +338,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ theme }) => {
                 {settings.language === 'tr' ? 'Widget\'lar' : 'Widgets'}
               </Text>
               <Text style={[styles.widgetDesc, { color: theme.textSecondary }]}>
-                {settings.language === 'tr' 
-                  ? 'Ana ekran widget\'larını önizle' 
+                {settings.language === 'tr'
+                  ? 'Ana ekran widget\'larını önizle'
                   : 'Preview home screen widgets'}
               </Text>
             </View>
@@ -352,7 +352,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ theme }) => {
       <View style={[styles.infoSection, { borderTopColor: theme.cardBorder }]}>
         <Text style={styles.appIcon}>🌤️</Text>
         <Text style={[styles.appName, { color: theme.text }]}>WeatherThen</Text>
-        <Text style={[styles.appVersion, { color: theme.textSecondary }]}>v0.3.5</Text>
+        <Text style={[styles.appVersion, { color: theme.textSecondary }]}>v0.4.0</Text>
         <Text style={[styles.poweredBy, { color: theme.textSecondary }]}>
           {t.poweredBy}
         </Text>

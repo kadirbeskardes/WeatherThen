@@ -1,5 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { memo, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, Animated, TouchableOpacity, Platform } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { ThemeColors } from '../utils/themeUtils';
 import { CurrentWeather } from '../types/weather';
 import { AppSettings } from '../types/settings';
@@ -21,13 +24,102 @@ interface DetailItem {
   subValueColor?: string;
 }
 
-export const WeatherDetailsGrid: React.FC<WeatherDetailsGridProps> = ({
+interface DetailCardProps {
+  item: DetailItem;
+  theme: ThemeColors;
+  language: string;
+  index: number;
+}
+
+const DetailCard = memo<DetailCardProps>(({ item, theme, language, index }) => {
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Staggered entrance
+    Animated.sequence([
+      Animated.delay(index * 60),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 7,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Subtle icon animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(rotateAnim, {
+          toValue: 0,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [scaleAnim, rotateAnim, index]);
+
+  const handlePress = async () => {
+    if (Platform.OS !== 'web') {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  };
+
+  const iconRotation = rotateAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: ['0deg', '5deg', '0deg'],
+  });
+
+  return (
+    <Animated.View style={[styles.gridItemWrapper, { transform: [{ scale: scaleAnim }] }]}>
+      <TouchableOpacity onPress={handlePress} activeOpacity={0.85}>
+        <BlurView intensity={30} tint={theme.isDark ? 'dark' : 'light'} style={styles.gridItemBlur}>
+          <LinearGradient
+            colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.02)']}
+            style={[styles.gridItem, { borderColor: theme.cardBorder }]}
+          >
+            <Animated.Text style={[styles.icon, { transform: [{ rotate: iconRotation }] }]}>
+              {item.icon}
+            </Animated.Text>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>
+              {language === 'tr' ? item.labelTr : item.labelEn}
+            </Text>
+            <Text style={[styles.value, { color: theme.text }]}>
+              {item.value}
+            </Text>
+            {item.subValue && (
+              <Text style={[styles.subValue, { color: item.subValueColor || theme.accent }]}>
+                {item.subValue}
+              </Text>
+            )}
+          </LinearGradient>
+        </BlurView>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+});
+
+const WeatherDetailsGridComponent: React.FC<WeatherDetailsGridProps> = ({
   current,
   theme,
   settings,
 }) => {
   const { convertPressure, getPressureSymbol, convertTemperature, getTemperatureSymbol } = useSettings();
   const t = getTranslations(settings.language);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
 
   const getFeelsLikeText = (): string => {
     const feels = convertTemperature(current.apparentTemperature);
@@ -42,38 +134,21 @@ export const WeatherDetailsGrid: React.FC<WeatherDetailsGridProps> = ({
   };
 
   const getHumidityComfort = (): { text: string; color: string } => {
-    // Based on dewpoint for comfort assessment
     const dewpoint = current.dewpoint;
     if (dewpoint < 10) {
-      return {
-        text: t.humidityDry,
-        color: '#FFA726', // Orange
-      };
+      return { text: t.humidityDry, color: '#FFA726' };
     } else if (dewpoint < 16) {
-      return {
-        text: t.humidityComfortable,
-        color: '#66BB6A', // Green
-      };
+      return { text: t.humidityComfortable, color: '#66BB6A' };
     } else if (dewpoint < 18) {
-      return {
-        text: t.humiditySlightlyHumid,
-        color: '#29B6F6', // Light Blue
-      };
+      return { text: t.humiditySlightlyHumid, color: '#29B6F6' };
     } else if (dewpoint < 21) {
-      return {
-        text: t.humidityHumid,
-        color: '#5C6BC0', // Indigo
-      };
+      return { text: t.humidityHumid, color: '#5C6BC0' };
     } else {
-      return {
-        text: t.humidityVeryHumid,
-        color: '#EF5350', // Red
-      };
+      return { text: t.humidityVeryHumid, color: '#EF5350' };
     }
   };
 
   const getPressureTrend = (): string => {
-    // Simplified pressure trend logic
     if (current.pressure > 1020) {
       return settings.language === 'tr' ? '↑ Yüksek' : '↑ High';
     } else if (current.pressure < 1000) {
@@ -84,29 +159,19 @@ export const WeatherDetailsGrid: React.FC<WeatherDetailsGridProps> = ({
 
   const getVisibilityText = (): string => {
     const km = current.visibility;
-    if (km >= 10) {
-      return settings.language === 'tr' ? 'Mükemmel' : 'Excellent';
-    } else if (km >= 5) {
-      return settings.language === 'tr' ? 'İyi' : 'Good';
-    } else if (km >= 2) {
-      return settings.language === 'tr' ? 'Orta' : 'Moderate';
-    } else if (km >= 1) {
-      return settings.language === 'tr' ? 'Zayıf' : 'Poor';
-    }
+    if (km >= 10) return settings.language === 'tr' ? 'Mükemmel' : 'Excellent';
+    if (km >= 5) return settings.language === 'tr' ? 'İyi' : 'Good';
+    if (km >= 2) return settings.language === 'tr' ? 'Orta' : 'Moderate';
+    if (km >= 1) return settings.language === 'tr' ? 'Zayıf' : 'Poor';
     return settings.language === 'tr' ? 'Çok Zayıf' : 'Very Poor';
   };
 
   const getCloudCoverDescription = (): string => {
     const cover = current.cloudCover;
-    if (cover < 10) {
-      return settings.language === 'tr' ? 'Açık' : 'Clear';
-    } else if (cover < 30) {
-      return settings.language === 'tr' ? 'Az Bulutlu' : 'Few Clouds';
-    } else if (cover < 60) {
-      return settings.language === 'tr' ? 'Parçalı Bulutlu' : 'Scattered';
-    } else if (cover < 90) {
-      return settings.language === 'tr' ? 'Çok Bulutlu' : 'Broken';
-    }
+    if (cover < 10) return settings.language === 'tr' ? 'Açık' : 'Clear';
+    if (cover < 30) return settings.language === 'tr' ? 'Az Bulutlu' : 'Few Clouds';
+    if (cover < 60) return settings.language === 'tr' ? 'Parçalı Bulutlu' : 'Scattered';
+    if (cover < 90) return settings.language === 'tr' ? 'Çok Bulutlu' : 'Broken';
     return settings.language === 'tr' ? 'Kapalı' : 'Overcast';
   };
 
@@ -161,51 +226,40 @@ export const WeatherDetailsGrid: React.FC<WeatherDetailsGridProps> = ({
       labelTr: 'UV İndeksi',
       labelEn: 'UV Index',
       value: `${current.uvIndex.toFixed(1)}`,
-      subValue: current.uvIndex <= 2 
+      subValue: current.uvIndex <= 2
         ? (settings.language === 'tr' ? 'Düşük' : 'Low')
-        : current.uvIndex <= 5 
+        : current.uvIndex <= 5
           ? (settings.language === 'tr' ? 'Orta' : 'Moderate')
-          : current.uvIndex <= 7 
+          : current.uvIndex <= 7
             ? (settings.language === 'tr' ? 'Yüksek' : 'High')
-            : current.uvIndex <= 10 
+            : current.uvIndex <= 10
               ? (settings.language === 'tr' ? 'Çok Yüksek' : 'Very High')
               : (settings.language === 'tr' ? 'Aşırı' : 'Extreme'),
     },
   ];
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
       <Text style={[styles.title, { color: theme.text }]}>
         📊 {settings.language === 'tr' ? 'Detaylar' : 'Details'}
       </Text>
-      
+
       <View style={styles.grid}>
         {details.map((item, index) => (
-          <View
+          <DetailCard
             key={index}
-            style={[
-              styles.gridItem,
-              { backgroundColor: theme.card, borderColor: theme.cardBorder },
-            ]}
-          >
-            <Text style={styles.icon}>{item.icon}</Text>
-            <Text style={[styles.label, { color: theme.textSecondary }]}>
-              {settings.language === 'tr' ? item.labelTr : item.labelEn}
-            </Text>
-            <Text style={[styles.value, { color: theme.text }]}>
-              {item.value}
-            </Text>
-            {item.subValue && (
-              <Text style={[styles.subValue, { color: item.subValueColor || theme.accent }]}>
-                {item.subValue}
-              </Text>
-            )}
-          </View>
+            item={item}
+            theme={theme}
+            language={settings.language}
+            index={index}
+          />
         ))}
       </View>
-    </View>
+    </Animated.View>
   );
 };
+
+export const WeatherDetailsGrid = memo(WeatherDetailsGridComponent);
 
 const styles = StyleSheet.create({
   container: {
@@ -220,25 +274,34 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -6,
+    marginHorizontal: -5,
+  },
+  gridItemWrapper: {
+    width: '33.33%',
+    paddingHorizontal: 5,
+    marginBottom: 12,
+  },
+  gridItemBlur: {
+    borderRadius: 14,
+    overflow: 'hidden',
   },
   gridItem: {
-    width: '30%',
-    marginHorizontal: '1.66%',
-    marginBottom: 12,
-    padding: 12,
-    borderRadius: 12,
+    padding: 14,
+    borderRadius: 14,
     borderWidth: 1,
     alignItems: 'center',
+    minHeight: 100,
+    justifyContent: 'center',
   },
   icon: {
-    fontSize: 24,
+    fontSize: 26,
     marginBottom: 6,
   },
   label: {
     fontSize: 10,
     textAlign: 'center',
     marginBottom: 4,
+    fontWeight: '500',
   },
   value: {
     fontSize: 15,
@@ -248,6 +311,7 @@ const styles = StyleSheet.create({
   subValue: {
     fontSize: 10,
     fontWeight: '600',
-    marginTop: 2,
+    marginTop: 3,
+    textAlign: 'center',
   },
 });

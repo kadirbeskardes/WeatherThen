@@ -1,5 +1,7 @@
-import React, { memo, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import React, { memo, useMemo, useCallback, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, Animated, Platform } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { HourlyWeather } from '../types/weather';
 import { getWeatherIcon, formatHour } from '../utils/weatherUtils';
 import { ThemeColors } from '../utils/themeUtils';
@@ -18,40 +20,112 @@ interface HourCardProps {
   theme: ThemeColors;
   settings: AppSettings;
   convertTemperature: (celsius: number) => number;
+  isNow?: boolean;
 }
 
 // Memoized hour card component
-const HourCard = memo<HourCardProps & { isNow?: boolean }>(({ hour, theme, settings, convertTemperature, isNow }) => {
+const HourCard = memo<HourCardProps>(({ hour, theme, settings, convertTemperature, isNow }) => {
   const displayTemperature = useMemo(() => convertTemperature(hour.temperature), [hour.temperature, convertTemperature]);
   const weatherIcon = useMemo(() => getWeatherIcon(hour.weatherCode, hour.isDay), [hour.weatherCode, hour.isDay]);
   const formattedTime = useMemo(() => isNow ? (settings.language === 'tr' ? 'Şimdi' : 'Now') : formatHour(hour.time, settings.language, settings.hourFormat24), [hour.time, settings.language, settings.hourFormat24, isNow]);
 
+  const glowAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(isNow ? 0.9 : 1)).current;
+
+  useEffect(() => {
+    if (isNow) {
+      // Entrance animation for "Now" card
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 6,
+        tension: 40,
+        useNativeDriver: true,
+      }).start();
+
+      // Glow animation
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(glowAnim, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(glowAnim, {
+            toValue: 0,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    }
+  }, [isNow, glowAnim, scaleAnim]);
+
+  const glowOpacity = glowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.5, 1],
+  });
+
+  if (isNow) {
+    return (
+      <Animated.View style={[
+        styles.nowCardWrapper,
+        { transform: [{ scale: scaleAnim }] }
+      ]}>
+        <LinearGradient
+          colors={[theme.accent, `${theme.accent}99`]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.nowCard}
+        >
+          <Animated.View style={[
+            styles.nowGlow,
+            {
+              backgroundColor: theme.accent,
+              opacity: glowOpacity,
+            }
+          ]} />
+          <Text style={[styles.nowTime, { color: theme.accent === '#FFD700' || theme.accent === '#FFEB3B' ? '#000' : '#fff' }]}>{formattedTime}</Text>
+          <Text style={styles.nowIcon}>{weatherIcon}</Text>
+          <Text style={[styles.nowTemp, { color: theme.accent === '#FFD700' || theme.accent === '#FFEB3B' ? '#000' : '#fff' }]}>{displayTemperature}°</Text>
+          {hour.precipitationProbability > 0 && (
+            <View style={styles.precipContainer}>
+              <Text style={styles.precipIcon}>💧</Text>
+              <Text style={[styles.nowPrecip, { color: theme.accent === '#FFD700' || theme.accent === '#FFEB3B' ? '#000' : '#fff' }]}>
+                {hour.precipitationProbability}%
+              </Text>
+            </View>
+          )}
+          <View style={styles.windContainer}>
+            <Text style={[styles.nowWind, { color: theme.accent === '#FFD700' || theme.accent === '#FFEB3B' ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.8)' }]}>
+              💨 {hour.windSpeed}
+            </Text>
+          </View>
+        </LinearGradient>
+      </Animated.View>
+    );
+  }
+
   return (
-    <View style={[
-      styles.hourCard, 
-      { 
-        backgroundColor: isNow ? 'rgba(255,255,255,0.2)' : theme.card, 
-        borderColor: isNow ? 'rgba(255,255,255,0.5)' : theme.cardBorder,
-        borderWidth: isNow ? 1.5 : 1
-      }
-    ]}>
-      <Text style={[styles.time, { color: isNow ? '#FFF' : theme.textSecondary, fontWeight: isNow ? '700' : '500' }]}>{formattedTime}</Text>
-      <Text style={styles.icon}>{weatherIcon}</Text>
-      <Text style={[styles.temp, { color: theme.text }]}>{displayTemperature}°</Text>
-      {hour.precipitationProbability > 0 && (
-        <View style={styles.precipContainer}>
-          <Text style={styles.precipIcon}>💧</Text>
-          <Text style={[styles.precip, { color: '#64B5F6' }]}>
-            {hour.precipitationProbability}%
+    <BlurView intensity={30} tint={theme.isDark ? 'dark' : 'light'} style={styles.hourCardBlur}>
+      <View style={[styles.hourCard, { borderColor: theme.cardBorder }]}>
+        <Text style={[styles.time, { color: theme.textSecondary }]}>{formattedTime}</Text>
+        <Text style={styles.icon}>{weatherIcon}</Text>
+        <Text style={[styles.temp, { color: theme.text }]}>{displayTemperature}°</Text>
+        {hour.precipitationProbability > 0 && (
+          <View style={styles.precipContainer}>
+            <Text style={styles.precipIcon}>💧</Text>
+            <Text style={[styles.precip, { color: '#64B5F6' }]}>
+              {hour.precipitationProbability}%
+            </Text>
+          </View>
+        )}
+        <View style={styles.windContainer}>
+          <Text style={[styles.wind, { color: theme.textSecondary }]}>
+            💨 {hour.windSpeed}
           </Text>
         </View>
-      )}
-      <View style={styles.windContainer}>
-        <Text style={[styles.wind, { color: theme.textSecondary }]}>
-          💨 {hour.windSpeed}
-        </Text>
       </View>
-    </View>
+    </BlurView>
   );
 }, (prevProps, nextProps) => {
   return (
@@ -59,38 +133,52 @@ const HourCard = memo<HourCardProps & { isNow?: boolean }>(({ hour, theme, setti
     prevProps.hour.temperature === nextProps.hour.temperature &&
     prevProps.hour.weatherCode === nextProps.hour.weatherCode &&
     prevProps.settings.language === nextProps.settings.language &&
-    prevProps.settings.temperatureUnit === nextProps.settings.temperatureUnit
+    prevProps.settings.temperatureUnit === nextProps.settings.temperatureUnit &&
+    prevProps.isNow === nextProps.isNow
   );
 });
 
-const HourlyForecastComponent: React.FC<HourlyForecastProps> = ({ 
-  hourlyData, 
+const HourlyForecastComponent: React.FC<HourlyForecastProps> = ({
+  hourlyData,
   theme,
   settings,
   convertTemperature,
 }) => {
   const translations = useMemo(() => getTranslations(settings.language), [settings.language]);
-  
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      delay: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
+
   // Limit data to 24 hours
   const displayData = useMemo(() => hourlyData.slice(0, 24), [hourlyData]);
-  
+
   const renderItem = useCallback(({ item, index }: { item: HourlyWeather; index: number }) => (
-    <HourCard 
-      hour={item} 
-      theme={theme} 
-      settings={settings} 
+    <HourCard
+      hour={item}
+      theme={theme}
+      settings={settings}
       convertTemperature={convertTemperature}
       isNow={index === 0}
     />
   ), [theme, settings, convertTemperature]);
 
-  const keyExtractor = useCallback((item: HourlyWeather, index: number) => 
+  const keyExtractor = useCallback((item: HourlyWeather, index: number) =>
     `${item.time}-${index}`, []
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.title, { color: theme.text }]}>{translations.hourlyForecast}</Text>
+    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+      <View style={styles.headerRow}>
+        <Text style={[styles.title, { color: theme.text }]}>{translations.hourlyForecast}</Text>
+        <Text style={styles.scrollHint}>→</Text>
+      </View>
       <FlatList
         horizontal
         data={displayData}
@@ -103,12 +191,12 @@ const HourlyForecastComponent: React.FC<HourlyForecastProps> = ({
         windowSize={5}
         removeClippedSubviews={true}
         getItemLayout={(_, index) => ({
-          length: 90,
-          offset: 90 * index,
+          length: 95,
+          offset: 95 * index,
           index,
         })}
       />
-    </View>
+    </Animated.View>
   );
 };
 
@@ -119,22 +207,81 @@ const styles = StyleSheet.create({
     marginTop: 25,
     paddingLeft: 20,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    paddingRight: 20,
+  },
   title: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12,
+  },
+  scrollHint: {
+    fontSize: 18,
+    opacity: 0.4,
   },
   scrollContent: {
     paddingRight: 20,
+  },
+  hourCardBlur: {
+    borderRadius: 20,
+    marginRight: 10,
+    overflow: 'hidden',
   },
   hourCard: {
     alignItems: 'center',
     paddingVertical: 15,
     paddingHorizontal: 16,
     borderRadius: 20,
-    marginRight: 10,
     minWidth: 80,
     borderWidth: 1,
+  },
+  nowCardWrapper: {
+    marginRight: 10,
+  },
+  nowCard: {
+    alignItems: 'center',
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    minWidth: 90,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  nowGlow: {
+    position: 'absolute',
+    top: -50,
+    left: -50,
+    right: -50,
+    bottom: -50,
+    borderRadius: 100,
+  },
+  nowTime: {
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  nowIcon: {
+    fontSize: 36,
+    marginBottom: 8,
+  },
+  nowTemp: {
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  nowPrecip: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 2,
+  },
+  nowWind: {
+    fontSize: 12,
   },
   time: {
     fontSize: 14,

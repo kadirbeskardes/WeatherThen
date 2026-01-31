@@ -36,7 +36,7 @@ import {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-type WidgetTypeKey = 
+type WidgetTypeKey =
   | 'temperature'
   | 'daily_summary'
   | 'hourly_chart'
@@ -139,13 +139,13 @@ export const WidgetPreviewScreen: React.FC<WidgetPreviewScreenProps> = ({
     try {
       // Önce cache'den dene
       let data = await getWidgetData();
-      
+
       // Cache yoksa veya eskiyse yeni veri al
       if (!data) {
         data = await prepareWidgetData(latitude, longitude, locationName, settings.language);
         await saveWidgetData(data);
       }
-      
+
       setWidgetData(data);
     } catch (error) {
       console.error('Widget verisi yüklenemedi:', error);
@@ -311,8 +311,8 @@ export const WidgetPreviewScreen: React.FC<WidgetPreviewScreenProps> = ({
           <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
             Widget Türü
           </Text>
-          <ScrollView 
-            horizontal 
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
             style={styles.typeSelector}
           >
@@ -425,7 +425,7 @@ export const WidgetPreviewScreen: React.FC<WidgetPreviewScreenProps> = ({
           <Text style={[styles.platformText, isDark && styles.textMuted]}>
             {Platform.OS === 'ios'
               ? 'iOS 14 ve üzeri sürümlerde widget desteği mevcuttur. Ana ekran ve kilit ekranına widget ekleyebilirsiniz.'
-              : 'Android 4.0 ve üzeri sürümlerde widget desteği mevcuttur. Ana ekrana widget ekleyebilirsiniz.'}
+              : 'Widget\'lar yalnızca "development build" veya "production build" ile çalışır. Expo Go\'da widget ekleyemezsiniz! Widget kullanmak için: eas build --profile development --platform android'}
           </Text>
         </View>
 
