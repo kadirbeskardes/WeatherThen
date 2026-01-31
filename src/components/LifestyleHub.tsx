@@ -5,14 +5,18 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { CurrentWeather, DailyWeather } from '../types/weather';
 import { calculateLifestyleScores, ActivityScore } from '../utils/lifestyleUtils';
+import { Language } from '../types/settings';
+import { getTranslations } from '../utils/translations';
 
 interface LifestyleHubProps {
   current: CurrentWeather;
   daily: DailyWeather;
+  language?: Language;
 }
 
-const DetailModal = ({ item, visible, onClose }: { item: ActivityScore | null, visible: boolean, onClose: () => void }) => {
+const DetailModal = ({ item, visible, onClose, language = 'tr' }: { item: ActivityScore | null, visible: boolean, onClose: () => void, language?: Language }) => {
   if (!item) return null;
+  const t = getTranslations(language);
 
   return (
     <Modal
@@ -31,17 +35,17 @@ const DetailModal = ({ item, visible, onClose }: { item: ActivityScore | null, v
             <MaterialCommunityIcons name={item.icon as any} size={40} color="#FFF" />
             <Text style={styles.modalTitle}>{item.label}</Text>
           </LinearGradient>
-          
+
           <View style={styles.modalBody}>
             <View style={styles.scoreCircle}>
               <Text style={[styles.scoreNumber, { color: item.color }]}>{item.score}</Text>
               <Text style={styles.scoreTotal}>/10</Text>
             </View>
-            
+
             <Text style={styles.modalDescription}>{item.description}</Text>
-            
+
             <TouchableOpacity style={[styles.closeButton, { backgroundColor: item.color }]} onPress={onClose}>
-              <Text style={styles.closeButtonText}>Tamam</Text>
+              <Text style={styles.closeButtonText}>{language === 'tr' ? 'Tamam' : 'OK'}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -64,7 +68,7 @@ const LifestyleCard = ({ item, onPress }: { item: ActivityScore; onPress: (item:
           <Text style={styles.scoreText}>{item.score}</Text>
         </View>
       </View>
-      
+
       <View style={styles.textContainer}>
         <Text style={styles.label}>{item.label}</Text>
         <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
@@ -73,36 +77,38 @@ const LifestyleCard = ({ item, onPress }: { item: ActivityScore; onPress: (item:
   </TouchableOpacity>
 );
 
-export const LifestyleHub: React.FC<LifestyleHubProps> = ({ current, daily }) => {
+export const LifestyleHub: React.FC<LifestyleHubProps> = ({ current, daily, language = 'tr' }) => {
   const scores = calculateLifestyleScores(current, daily);
   const activities = Object.values(scores);
   const [selectedItem, setSelectedItem] = useState<ActivityScore | null>(null);
+  const sectionTitle = language === 'tr' ? 'Yaşam & Aktivite' : 'Lifestyle & Activity';
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Yaşam & Aktivite</Text>
+        <Text style={styles.title}>{sectionTitle}</Text>
         <MaterialCommunityIcons name="heart-pulse" size={20} color="#FFF" style={{ opacity: 0.8 }} />
       </View>
-      
-      <ScrollView 
-        horizontal 
+
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
         {activities.map((activity, index) => (
-          <LifestyleCard 
-            key={index} 
-            item={activity} 
+          <LifestyleCard
+            key={index}
+            item={activity}
             onPress={setSelectedItem}
           />
         ))}
       </ScrollView>
 
-      <DetailModal 
-        item={selectedItem} 
-        visible={!!selectedItem} 
-        onClose={() => setSelectedItem(null)} 
+      <DetailModal
+        item={selectedItem}
+        visible={!!selectedItem}
+        onClose={() => setSelectedItem(null)}
+        language={language}
       />
     </View>
   );

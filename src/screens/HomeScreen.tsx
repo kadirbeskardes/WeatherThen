@@ -50,121 +50,122 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <>
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={theme.text}
-          colors={[theme.accent]}
-        />
-      }
-    >
-      <CurrentWeatherDisplay
-        weather={weatherData.current}
-        locationName={weatherData.location.name}
-        theme={theme}
-        settings={settings}
-        convertTemperature={convertTemperature}
-        convertWindSpeed={convertWindSpeed}
-        getTemperatureSymbol={getTemperatureSymbol}
-        getWindSpeedSymbol={getWindSpeedSymbol}
-        yesterdayTemp={weatherData.daily[1]?.temperatureMax}
-      />
-
-      {/* Weather Alerts - Show first if there are any */}
-      <WeatherAlerts
-        weatherData={weatherData}
-        theme={theme}
-        settings={settings}
-      />
-
-      <HourlyForecast
-        hourlyData={weatherData.hourly}
-        theme={theme}
-        settings={settings}
-        convertTemperature={convertTemperature}
-      />
-      
-      <QuickStats
-        weatherData={weatherData}
-        theme={theme}
-        settings={settings}
-      />
-      
-      <DayNightCycle
-        sunrise={weatherData.daily[0].sunrise}
-        sunset={weatherData.daily[0].sunset}
-        currentTime={new Date()}
-        theme={theme}
-        language={settings.language}
-      />
-
-      <LifestyleHub 
-        current={weatherData.current} 
-        daily={weatherData.daily[0]} 
-      />
-
-      <FeelsLikeExplainer
-        weatherData={weatherData}
-        theme={theme}
-        settings={settings}
-        convertTemperature={convertTemperature}
-        getTemperatureSymbol={getTemperatureSymbol}
-      />
-
-      {/* Premium: Comfort Index */}
-      <PremiumFeatureWrapper 
-        feature="comfort_index" 
-        theme={theme} 
-        language={settings.language}
-        onUpgradePress={handleUpgradePress}
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.text}
+            colors={[theme.accent]}
+          />
+        }
       >
-        <ComfortIndex
-          hourlyData={weatherData.hourly}
+        <CurrentWeatherDisplay
+          weather={weatherData.current}
+          locationName={weatherData.location.name}
+          theme={theme}
+          settings={settings}
+          convertTemperature={convertTemperature}
+          convertWindSpeed={convertWindSpeed}
+          getTemperatureSymbol={getTemperatureSymbol}
+          getWindSpeedSymbol={getWindSpeedSymbol}
+          yesterdayTemp={weatherData.daily[1]?.temperatureMax}
+        />
+
+        {/* Weather Alerts - Show first if there are any */}
+        <WeatherAlerts
+          weatherData={weatherData}
           theme={theme}
           settings={settings}
         />
-      </PremiumFeatureWrapper>
 
-      <WeatherTips
-        weather={weatherData}
-        theme={theme}
-        settings={settings}
-      />
+        <HourlyForecast
+          hourlyData={weatherData.hourly}
+          theme={theme}
+          settings={settings}
+          convertTemperature={convertTemperature}
+        />
 
-      <WeatherDetailsGrid
-        current={weatherData.current}
-        theme={theme}
-        settings={settings}
-      />
+        <QuickStats
+          weatherData={weatherData}
+          theme={theme}
+          settings={settings}
+        />
 
-      {/* Premium: Weather Share */}
-      <PremiumFeatureWrapper 
-        feature="weather_share" 
-        theme={theme} 
-        language={settings.language}
-        onUpgradePress={handleUpgradePress}
-      >
-        <WeatherShare
+        <DayNightCycle
+          sunrise={weatherData.daily[0].sunrise}
+          sunset={weatherData.daily[0].sunset}
+          currentTime={new Date()}
+          theme={theme}
+          language={settings.language}
+        />
+
+        <LifestyleHub
+          current={weatherData.current}
+          daily={weatherData.daily[0]}
+          language={settings.language}
+        />
+
+        <FeelsLikeExplainer
           weatherData={weatherData}
           theme={theme}
           settings={settings}
           convertTemperature={convertTemperature}
           getTemperatureSymbol={getTemperatureSymbol}
         />
-      </PremiumFeatureWrapper>
-    </ScrollView>
 
-    {/* Premium Paywall */}
-    <PremiumPaywall
-      visible={showPremiumPaywall}
-      onClose={() => setShowPremiumPaywall(false)}
-      theme={theme}
-      language={settings.language}
-    />
+        {/* Premium: Comfort Index */}
+        <PremiumFeatureWrapper
+          feature="comfort_index"
+          theme={theme}
+          language={settings.language}
+          onUpgradePress={handleUpgradePress}
+        >
+          <ComfortIndex
+            hourlyData={weatherData.hourly}
+            theme={theme}
+            settings={settings}
+          />
+        </PremiumFeatureWrapper>
+
+        <WeatherTips
+          weather={weatherData}
+          theme={theme}
+          settings={settings}
+        />
+
+        <WeatherDetailsGrid
+          current={weatherData.current}
+          theme={theme}
+          settings={settings}
+        />
+
+        {/* Premium: Weather Share */}
+        <PremiumFeatureWrapper
+          feature="weather_share"
+          theme={theme}
+          language={settings.language}
+          onUpgradePress={handleUpgradePress}
+        >
+          <WeatherShare
+            weatherData={weatherData}
+            theme={theme}
+            settings={settings}
+            convertTemperature={convertTemperature}
+            getTemperatureSymbol={getTemperatureSymbol}
+          />
+        </PremiumFeatureWrapper>
+      </ScrollView>
+
+      {/* Premium Paywall */}
+      <PremiumPaywall
+        visible={showPremiumPaywall}
+        onClose={() => setShowPremiumPaywall(false)}
+        theme={theme}
+        language={settings.language}
+      />
     </>
   );
 };

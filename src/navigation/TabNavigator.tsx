@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HomeScreen, ForecastScreen, FavoritesScreen, SettingsScreen } from '../screens';
+import { HomeScreen, ForecastScreen, RadarScreen, FavoritesScreen, SettingsScreen } from '../screens';
 import { WeatherData, LocationData, GeocodingResult } from '../types/weather';
 import { ThemeColors } from '../utils/themeUtils';
 import { AppSettings } from '../types/settings';
@@ -49,7 +49,7 @@ export const TabNavigator: React.FC<TabNavigatorProps> = ({
 }) => {
   const t = getTranslations(settings.language);
   const insets = useSafeAreaInsets();
-  
+
   // Calculate tab bar height with safe area
   const tabBarHeight = 60 + insets.bottom;
 
@@ -123,6 +123,24 @@ export const TabNavigator: React.FC<TabNavigatorProps> = ({
             convertTemperature={convertTemperature}
             convertWindSpeed={convertWindSpeed}
             getTemperatureSymbol={getTemperatureSymbol}
+          />
+        )}
+      </Tab.Screen>
+
+      <Tab.Screen
+        name="Radar"
+        options={{
+          tabBarLabel: t.radar,
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon icon="🗺️" focused={focused} color={color} />
+          ),
+        }}
+      >
+        {() => (
+          <RadarScreen
+            weatherData={weatherData}
+            theme={theme}
+            settings={settings}
           />
         )}
       </Tab.Screen>

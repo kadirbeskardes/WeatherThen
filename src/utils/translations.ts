@@ -6,7 +6,7 @@ interface Translations {
   settings: string;
   save: string;
   cancel: string;
-  
+
   // Weather
   feelsLike: string;
   humidity: string;
@@ -16,23 +16,23 @@ interface Translations {
   uvIndex: string;
   cloudCover: string;
   precipitation: string;
-  
+
   // Time
   now: string;
   today: string;
   tomorrow: string;
-  
+
   // Forecast
   hourlyForecast: string;
   dailyForecast: string;
-  
+
   // Location
   searchLocation: string;
   searchPlaceholder: string;
   popularCities: string;
   myLocation: string;
   unknownLocation: string;
-  
+
   // Settings
   temperatureUnit: string;
   windSpeedUnit: string;
@@ -43,12 +43,12 @@ interface Translations {
   hourFormat: string;
   hour24: string;
   hour12: string;
-  
+
   // Theme modes
   themeAuto: string;
   themeLight: string;
   themeDark: string;
-  
+
   // Units
   celsius: string;
   fahrenheit: string;
@@ -58,7 +58,7 @@ interface Translations {
   hPa: string;
   inHg: string;
   mmHg: string;
-  
+
   // Additional weather info
   dewpoint: string;
   humidityComfort: string;
@@ -67,14 +67,14 @@ interface Translations {
   humiditySlightlyHumid: string;
   humidityHumid: string;
   humidityVeryHumid: string;
-  
+
   // UV Levels
   uvLow: string;
   uvModerate: string;
   uvHigh: string;
   uvVeryHigh: string;
   uvExtreme: string;
-  
+
   // Wind directions
   windN: string;
   windNE: string;
@@ -84,7 +84,7 @@ interface Translations {
   windSW: string;
   windW: string;
   windNW: string;
-  
+
   // Weather conditions
   clear: string;
   mostlyClear: string;
@@ -114,25 +114,25 @@ interface Translations {
   thunderstorm: string;
   thunderstormLightHail: string;
   thunderstormHeavyHail: string;
-  
+
   // Warnings
   uvWarning: string;
   rainWarning: string;
   windWarning: string;
-  
+
   // Day details
   sunrise: string;
   sunset: string;
   precipProbability: string;
   totalPrecipitation: string;
   maxWind: string;
-  
+
   // Errors
   errorTitle: string;
   errorWeatherFetch: string;
   errorLocation: string;
   retry: string;
-  
+
   // Loading
   loading: string;
   updatedNow: string;
@@ -144,19 +144,19 @@ interface Translations {
   home: string;
   forecast: string;
   favorites: string;
-  
+
   // Comparisons
   warmerThanYesterday: string;
   colderThanYesterday: string;
   sameAsYesterday: string;
   temperatureTrend: string;
-  
+
   // Favorites Screen
   favoriteLocations: string;
   noFavorites: string;
   addCurrentLocation: string;
   tapToAddFavorite: string;
-  
+
   // Settings descriptions
   appInfo: string;
   poweredBy: string;
@@ -177,6 +177,14 @@ interface Translations {
   premiumExpires: string;
   favoritesLimitReached: string;
   upgradeForMore: string;
+
+  // Radar
+  radar: string;
+  layers: string;
+  precipitationLayer: string;
+  temperatureLayer: string;
+  cloudLayer: string;
+  windLayer: string;
 }
 
 const tr: Translations = {
@@ -184,7 +192,7 @@ const tr: Translations = {
   settings: 'Ayarlar',
   save: 'Kaydet',
   cancel: 'İptal',
-  
+
   feelsLike: 'Hissedilen',
   humidity: 'Nem',
   wind: 'Rüzgar',
@@ -193,20 +201,20 @@ const tr: Translations = {
   uvIndex: 'UV İndeks',
   cloudCover: 'Bulut',
   precipitation: 'Yağış',
-  
+
   now: 'Şimdi',
   today: 'Bugün',
   tomorrow: 'Yarın',
-  
+
   hourlyForecast: '⏰ Saatlik Tahmin',
   dailyForecast: '📅 14 Günlük Tahmin',
-  
+
   searchLocation: '📍 Konum Ara',
   searchPlaceholder: 'Şehir ara...',
   popularCities: 'Popüler Şehirler',
   myLocation: 'Konumum',
   unknownLocation: 'Bilinmeyen Konum',
-  
+
   temperatureUnit: 'Sıcaklık Birimi',
   windSpeedUnit: 'Rüzgar Hızı Birimi',
   pressureUnit: 'Basınç Birimi',
@@ -216,11 +224,11 @@ const tr: Translations = {
   hourFormat: 'Saat Formatı',
   hour24: '24 saat',
   hour12: '12 saat',
-  
+
   themeAuto: 'Otomatik',
   themeLight: 'Açık',
   themeDark: 'Koyu',
-  
+
   celsius: 'Celsius (°C)',
   fahrenheit: 'Fahrenheit (°F)',
   kmh: 'km/h',
@@ -229,7 +237,7 @@ const tr: Translations = {
   hPa: 'hPa',
   inHg: 'inHg',
   mmHg: 'mmHg',
-  
+
   // Additional weather info
   dewpoint: 'Çiy Noktası',
   humidityComfort: 'Nem Konforu',
@@ -238,13 +246,13 @@ const tr: Translations = {
   humiditySlightlyHumid: 'Biraz Nemli',
   humidityHumid: 'Nemli',
   humidityVeryHumid: 'Çok Nemli',
-  
+
   uvLow: 'Düşük',
   uvModerate: 'Orta',
   uvHigh: 'Yüksek',
   uvVeryHigh: 'Çok Yüksek',
   uvExtreme: 'Aşırı',
-  
+
   windN: 'K',
   windNE: 'KD',
   windE: 'D',
@@ -253,7 +261,7 @@ const tr: Translations = {
   windSW: 'GB',
   windW: 'B',
   windNW: 'KB',
-  
+
   clear: 'Açık',
   mostlyClear: 'Çoğunlukla Açık',
   partlyCloudy: 'Parçalı Bulutlu',
@@ -282,22 +290,22 @@ const tr: Translations = {
   thunderstorm: 'Gök Gürültülü Fırtına',
   thunderstormLightHail: 'Hafif Dolu ile Fırtına',
   thunderstormHeavyHail: 'Yoğun Dolu ile Fırtına',
-  
+
   uvWarning: 'UV endeksi yüksek! Güneş kremi kullanmayı unutmayın.',
   rainWarning: 'Yağmur olasılığı yüksek, şemsiye almayı düşünün.',
   windWarning: 'Güçlü rüzgar bekleniyor, dikkatli olun.',
-  
+
   sunrise: 'Gün Doğumu',
   sunset: 'Gün Batımı',
   precipProbability: 'Yağış Olasılığı',
   totalPrecipitation: 'Toplam Yağış',
   maxWind: 'Maks. Rüzgar',
-  
+
   errorTitle: 'Bir Sorun Oluştu',
   errorWeatherFetch: 'Hava durumu verileri alınamadı. Lütfen tekrar deneyin.',
   errorLocation: 'Konum alınamadı. Lütfen konum izni verin veya bir şehir arayın.',
   retry: '🔄 Tekrar Dene',
-  
+
   loading: 'Hava durumu yükleniyor...',
   updatedNow: 'Şimdi güncellendi',
   updatedMinutesAgo: 'dakika önce',
@@ -308,19 +316,19 @@ const tr: Translations = {
   home: 'Ana Sayfa',
   forecast: 'Tahmin',
   favorites: 'Favoriler',
-  
+
   // Comparisons
   warmerThanYesterday: 'Dünden daha sıcak',
   colderThanYesterday: 'Dünden daha soğuk',
   sameAsYesterday: 'Dünle aynı',
   temperatureTrend: 'Sıcaklık Trendi',
-  
+
   // Favorites Screen
   favoriteLocations: 'Favori Konumlar',
   noFavorites: 'Henüz favori konum eklemediniz',
   addCurrentLocation: 'Mevcut konumu ekle',
   tapToAddFavorite: 'Mevcut konumunuzu favorilere eklemek için yukarıdaki butona dokunun',
-  
+
   // Settings descriptions
   appInfo: 'Uygulama Bilgisi',
   poweredBy: 'Open-Meteo API ile desteklenmektedir',
@@ -341,6 +349,14 @@ const tr: Translations = {
   premiumExpires: 'Bitiş tarihi',
   favoritesLimitReached: 'Favori limitine ulaştınız',
   upgradeForMore: 'Daha fazla eklemek için Premium\'a yükseltin',
+
+  // Radar
+  radar: 'Radar',
+  layers: 'Katmanlar',
+  precipitationLayer: 'Yağış',
+  temperatureLayer: 'Sıcaklık',
+  cloudLayer: 'Bulut',
+  windLayer: 'Rüzgar',
 };
 
 const en: Translations = {
@@ -348,7 +364,7 @@ const en: Translations = {
   settings: 'Settings',
   save: 'Save',
   cancel: 'Cancel',
-  
+
   feelsLike: 'Feels like',
   humidity: 'Humidity',
   wind: 'Wind',
@@ -357,20 +373,20 @@ const en: Translations = {
   uvIndex: 'UV Index',
   cloudCover: 'Cloud',
   precipitation: 'Precipitation',
-  
+
   now: 'Now',
   today: 'Today',
   tomorrow: 'Tomorrow',
-  
+
   hourlyForecast: '⏰ Hourly Forecast',
   dailyForecast: '📅 14-Day Forecast',
-  
+
   searchLocation: '📍 Search Location',
   searchPlaceholder: 'Search city...',
   popularCities: 'Popular Cities',
   myLocation: 'My Location',
   unknownLocation: 'Unknown Location',
-  
+
   temperatureUnit: 'Temperature Unit',
   windSpeedUnit: 'Wind Speed Unit',
   pressureUnit: 'Pressure Unit',
@@ -380,11 +396,11 @@ const en: Translations = {
   hourFormat: 'Time Format',
   hour24: '24 hour',
   hour12: '12 hour',
-  
+
   themeAuto: 'Auto',
   themeLight: 'Light',
   themeDark: 'Dark',
-  
+
   celsius: 'Celsius (°C)',
   fahrenheit: 'Fahrenheit (°F)',
   kmh: 'km/h',
@@ -393,7 +409,7 @@ const en: Translations = {
   hPa: 'hPa',
   inHg: 'inHg',
   mmHg: 'mmHg',
-  
+
   // Additional weather info
   dewpoint: 'Dewpoint',
   humidityComfort: 'Humidity Comfort',
@@ -402,13 +418,13 @@ const en: Translations = {
   humiditySlightlyHumid: 'Slightly Humid',
   humidityHumid: 'Humid',
   humidityVeryHumid: 'Very Humid',
-  
+
   uvLow: 'Low',
   uvModerate: 'Moderate',
   uvHigh: 'High',
   uvVeryHigh: 'Very High',
   uvExtreme: 'Extreme',
-  
+
   windN: 'N',
   windNE: 'NE',
   windE: 'E',
@@ -417,7 +433,7 @@ const en: Translations = {
   windSW: 'SW',
   windW: 'W',
   windNW: 'NW',
-  
+
   clear: 'Clear',
   mostlyClear: 'Mostly Clear',
   partlyCloudy: 'Partly Cloudy',
@@ -446,22 +462,22 @@ const en: Translations = {
   thunderstorm: 'Thunderstorm',
   thunderstormLightHail: 'Thunderstorm with Light Hail',
   thunderstormHeavyHail: 'Thunderstorm with Heavy Hail',
-  
+
   uvWarning: 'UV index is high! Don\'t forget to use sunscreen.',
   rainWarning: 'High chance of rain, consider taking an umbrella.',
   windWarning: 'Strong wind expected, be careful.',
-  
+
   sunrise: 'Sunrise',
   sunset: 'Sunset',
   precipProbability: 'Precipitation Probability',
   totalPrecipitation: 'Total Precipitation',
   maxWind: 'Max Wind',
-  
+
   errorTitle: 'Something Went Wrong',
   errorWeatherFetch: 'Failed to fetch weather data. Please try again.',
   errorLocation: 'Could not get location. Please enable location access or search for a city.',
   retry: '🔄 Retry',
-  
+
   loading: 'Loading weather...',
   updatedNow: 'Updated now',
   updatedMinutesAgo: 'minutes ago',
@@ -472,19 +488,19 @@ const en: Translations = {
   home: 'Home',
   forecast: 'Forecast',
   favorites: 'Favorites',
-  
+
   // Comparisons
   warmerThanYesterday: 'Warmer than yesterday',
   colderThanYesterday: 'Colder than yesterday',
   sameAsYesterday: 'Same as yesterday',
   temperatureTrend: 'Temperature Trend',
-  
+
   // Favorites Screen
   favoriteLocations: 'Favorite Locations',
   noFavorites: 'No favorite locations yet',
   addCurrentLocation: 'Add current location',
   tapToAddFavorite: 'Tap the button above to add your current location to favorites',
-  
+
   // Settings descriptions
   appInfo: 'App Info',
   poweredBy: 'Powered by Open-Meteo API',
@@ -505,6 +521,14 @@ const en: Translations = {
   premiumExpires: 'Expires on',
   favoritesLimitReached: 'Favorites limit reached',
   upgradeForMore: 'Upgrade to Premium for more',
+
+  // Radar
+  radar: 'Radar',
+  layers: 'Layers',
+  precipitationLayer: 'Rain',
+  temperatureLayer: 'Temp',
+  cloudLayer: 'Cloud',
+  windLayer: 'Wind',
 };
 
 const translations: Record<Language, Translations> = {

@@ -35,3 +35,6 @@ export { WindDirectionIndicator } from './WindDirectionIndicator';
 // Premium components
 export { PremiumFeatureWrapper, PremiumBadge, PremiumLockOverlay } from './PremiumFeatureWrapper';
 export { PremiumPaywall } from './PremiumPaywall';
+
+// Loading components
+export { SkeletonLoader, WeatherCardSkeleton, HourlyForecastSkeleton, StatsSkeleton } from './SkeletonLoader';
