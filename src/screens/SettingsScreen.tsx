@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,12 @@ import {
   Switch,
   TouchableOpacity,
   Modal,
+  Animated,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import * as Haptics from 'expo-haptics';
 import { ThemeColors } from '../utils/themeUtils';
 import { useSettings } from '../context/SettingsContext';
 import { usePremium } from '../context/PremiumContext';
@@ -28,27 +32,66 @@ interface OptionButtonProps {
   theme: ThemeColors;
 }
 
-const OptionButton: React.FC<OptionButtonProps> = ({ label, selected, onPress, theme }) => (
-  <TouchableOpacity
-    style={[
-      styles.optionButton,
-      {
-        backgroundColor: selected ? theme.accent : theme.card,
-        borderColor: selected ? theme.accent : theme.cardBorder,
-      },
-    ]}
-    onPress={onPress}
-  >
-    <Text
-      style={[
-        styles.optionButtonText,
-        { color: selected ? (theme.accent === '#FFD700' || theme.accent === '#FFEB3B' ? '#000' : '#fff') : theme.text },
-      ]}
-    >
-      {label}
-    </Text>
-  </TouchableOpacity>
-);
+const OptionButton: React.FC<OptionButtonProps> = ({ label, selected, onPress, theme }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePress = async () => {
+    if (Platform.OS !== 'web') {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.92,
+        duration: 60,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 5,
+        tension: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    onPress();
+  };
+
+  const isLightAccent = theme.accent === '#FBBF24' || theme.accent === '#FCD34D' || theme.accent === '#FFD54F' || theme.accent === '#FFC107';
+
+  return (
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <TouchableOpacity
+        style={[
+          styles.optionButton,
+          {
+            backgroundColor: selected ? theme.accent : theme.card,
+            borderColor: selected ? theme.accent : theme.cardBorder,
+            shadowColor: selected ? theme.accent : 'transparent',
+            shadowOffset: { width: 0, height: selected ? 4 : 0 },
+            shadowOpacity: selected ? 0.3 : 0,
+            shadowRadius: selected ? 8 : 0,
+            elevation: selected ? 4 : 0,
+          },
+        ]}
+        onPress={handlePress}
+        activeOpacity={0.8}
+      >
+        {selected && (
+          <View style={styles.selectedIndicator}>
+            <Text style={{ fontSize: 10 }}>✓</Text>
+          </View>
+        )}
+        <Text
+          style={[
+            styles.optionButtonText,
+            { color: selected ? (isLightAccent ? '#1A1A1A' : '#FFFFFF') : theme.text },
+          ]}
+        >
+          {label}
+        </Text>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ theme }) => {
   const { settings, updateSettings } = useSettings();
@@ -352,7 +395,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ theme }) => {
       <View style={[styles.infoSection, { borderTopColor: theme.cardBorder }]}>
         <Text style={styles.appIcon}>🌤️</Text>
         <Text style={[styles.appName, { color: theme.text }]}>WeatherThen</Text>
-        <Text style={[styles.appVersion, { color: theme.textSecondary }]}>v0.4.0</Text>
+        <Text style={[styles.appVersion, { color: theme.textSecondary }]}>v0.5.0</Text>
         <Text style={[styles.poweredBy, { color: theme.textSecondary }]}>
           {t.poweredBy}
         </Text>
@@ -417,16 +460,34 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   optionButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 12,
-    borderWidth: 1,
-    minWidth: 80,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    minWidth: 85,
     alignItems: 'center',
+    position: 'relative',
+  },
+  selectedIndicator: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
   },
   optionButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   switchRow: {
     flexDirection: 'row',

@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, Platform, Animated } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
 import { HomeScreen, ForecastScreen, RadarScreen, FavoritesScreen, SettingsScreen } from '../screens';
 import { WeatherData, LocationData, GeocodingResult } from '../types/weather';
 import { ThemeColors } from '../utils/themeUtils';
@@ -27,13 +28,58 @@ interface TabIconProps {
   icon: string;
   focused: boolean;
   color: string;
+  theme: ThemeColors;
 }
 
-const TabIcon: React.FC<TabIconProps> = ({ icon, focused }) => (
-  <View style={[styles.tabIconContainer, focused && styles.tabIconFocused]}>
-    <Text style={[styles.tabIcon, focused && styles.tabIconTextFocused]}>{icon}</Text>
-  </View>
-);
+const TabIcon: React.FC<TabIconProps> = ({ icon, focused, theme }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (focused) {
+      Animated.parallel([
+        Animated.spring(scaleAnim, {
+          toValue: 1.15,
+          friction: 6,
+          tension: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 6,
+          tension: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [focused, scaleAnim, glowAnim]);
+
+  return (
+    <Animated.View style={[
+      styles.tabIconContainer,
+      focused && styles.tabIconFocused,
+      {
+        transform: [{ scale: scaleAnim }],
+        backgroundColor: focused ? `${theme.accent}25` : 'transparent',
+      }
+    ]}>
+      <Text style={[styles.tabIcon, focused && styles.tabIconTextFocused]}>{icon}</Text>
+    </Animated.View>
+  );
+};
 
 export const TabNavigator: React.FC<TabNavigatorProps> = ({
   weatherData,
@@ -51,31 +97,42 @@ export const TabNavigator: React.FC<TabNavigatorProps> = ({
   const insets = useSafeAreaInsets();
 
   // Calculate tab bar height with safe area
-  const tabBarHeight = 60 + insets.bottom;
+  const tabBarHeight = 70 + insets.bottom;
 
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: theme.primary[0],
+          position: 'absolute',
+          backgroundColor: Platform.OS === 'ios' ? 'transparent' : `${theme.primary[0]}F0`,
           borderTopColor: theme.cardBorder,
-          borderTopWidth: 1,
-          paddingTop: 8,
-          paddingBottom: Math.max(insets.bottom, 8),
+          borderTopWidth: 0.5,
+          paddingTop: 10,
+          paddingBottom: Math.max(insets.bottom, 10),
           height: tabBarHeight,
-          elevation: 8,
+          elevation: 20,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 12,
         },
+        tabBarBackground: () => (
+          Platform.OS === 'ios' ? (
+            <BlurView
+              intensity={80}
+              tint={theme.isDark ? 'dark' : 'light'}
+              style={StyleSheet.absoluteFill}
+            />
+          ) : null
+        ),
         tabBarActiveTintColor: theme.accent,
         tabBarInactiveTintColor: theme.textSecondary,
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
-          marginTop: 2,
+          marginTop: 4,
+          letterSpacing: 0.3,
         },
         sceneStyle: { backgroundColor: 'transparent' },
       }}
@@ -85,7 +142,7 @@ export const TabNavigator: React.FC<TabNavigatorProps> = ({
         options={{
           tabBarLabel: t.home,
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon icon="🏠" focused={focused} color={color} />
+            <TabIcon icon="🏠" focused={focused} color={color} theme={theme} />
           ),
         }}
       >
@@ -109,7 +166,7 @@ export const TabNavigator: React.FC<TabNavigatorProps> = ({
         options={{
           tabBarLabel: t.forecast,
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon icon="📅" focused={focused} color={color} />
+            <TabIcon icon="📅" focused={focused} color={color} theme={theme} />
           ),
         }}
       >
@@ -132,7 +189,7 @@ export const TabNavigator: React.FC<TabNavigatorProps> = ({
         options={{
           tabBarLabel: t.radar,
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon icon="🗺️" focused={focused} color={color} />
+            <TabIcon icon="🗺️" focused={focused} color={color} theme={theme} />
           ),
         }}
       >
@@ -150,7 +207,7 @@ export const TabNavigator: React.FC<TabNavigatorProps> = ({
         options={{
           tabBarLabel: t.favorites,
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon icon="⭐" focused={focused} color={color} />
+            <TabIcon icon="⭐" focused={focused} color={color} theme={theme} />
           ),
         }}
       >
@@ -170,7 +227,7 @@ export const TabNavigator: React.FC<TabNavigatorProps> = ({
         options={{
           tabBarLabel: t.settings,
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon icon="⚙️" focused={focused} color={color} />
+            <TabIcon icon="⚙️" focused={focused} color={color} theme={theme} />
           ),
         }}
       >

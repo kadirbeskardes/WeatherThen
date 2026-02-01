@@ -29,46 +29,68 @@ interface StatItemProps {
 }
 
 const StatItem = memo<StatItemProps>(({ emoji, label, value, theme, index, accentColor }) => {
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
   const bounceAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Staggered entrance animation
     Animated.sequence([
-      Animated.delay(index * 100),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        friction: 6,
-        tension: 40,
-        useNativeDriver: true,
-      }),
+      Animated.delay(index * 80),
+      Animated.parallel([
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 7,
+          tension: 50,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]),
     ]).start();
 
-    // Icon bounce animation
+    // Subtle icon bounce animation
     Animated.loop(
       Animated.sequence([
         Animated.timing(bounceAnim, {
-          toValue: -4,
-          duration: 1500,
+          toValue: -3,
+          duration: 1800 + (index * 200),
           useNativeDriver: true,
         }),
         Animated.timing(bounceAnim, {
           toValue: 0,
-          duration: 1500,
+          duration: 1800 + (index * 200),
           useNativeDriver: true,
         }),
       ])
     ).start();
-  }, [scaleAnim, bounceAnim, index]);
+  }, [scaleAnim, bounceAnim, fadeAnim, index]);
 
   const handlePress = async () => {
     if (Platform.OS !== 'web') {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
+    // Quick tap feedback animation
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.95,
+        duration: 60,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 5,
+        tension: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   return (
-    <Animated.View style={[styles.statItemWrapper, { transform: [{ scale: scaleAnim }] }]}>
+    <Animated.View style={[styles.statItemWrapper, { transform: [{ scale: scaleAnim }], opacity: fadeAnim }]}>
       <TouchableOpacity onPress={handlePress} activeOpacity={0.85}>
         <BlurView intensity={35} tint={theme.isDark ? 'dark' : 'light'} style={styles.statBlur}>
           <LinearGradient

@@ -35,19 +35,26 @@ const DayCard = memo<DayCardProps>(({ day, theme, settings, onPress, convertTemp
   const displayMinTemperature = useMemo(() => convertTemperature(day.temperatureMin), [day.temperatureMin, convertTemperature]);
   const temperatureRangePercent = useMemo(() => Math.min(((day.temperatureMax - day.temperatureMin) / 40) * 100, 100), [day.temperatureMax, day.temperatureMin]);
 
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
   const barWidthAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const iconFloatAnim = useRef(new Animated.Value(0)).current;
   const iconRotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Staggered entrance animation
     Animated.sequence([
-      Animated.delay(index * 50),
+      Animated.delay(index * 60),
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 400,
+          duration: 350,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 7,
+          tension: 50,
           useNativeDriver: true,
         }),
         Animated.spring(barWidthAnim, {
@@ -59,22 +66,38 @@ const DayCard = memo<DayCardProps>(({ day, theme, settings, onPress, convertTemp
       ]),
     ]).start();
 
-    // Subtle icon animation
+    // Subtle icon floating animation
     Animated.loop(
       Animated.sequence([
-        Animated.timing(iconRotateAnim, {
-          toValue: 1,
-          duration: 3000,
+        Animated.timing(iconFloatAnim, {
+          toValue: -2,
+          duration: 1500 + (index * 150),
           useNativeDriver: true,
         }),
-        Animated.timing(iconRotateAnim, {
+        Animated.timing(iconFloatAnim, {
           toValue: 0,
-          duration: 3000,
+          duration: 1500 + (index * 150),
           useNativeDriver: true,
         }),
       ])
     ).start();
-  }, [fadeAnim, barWidthAnim, temperatureRangePercent, index, iconRotateAnim]);
+
+    // Very subtle icon rotation animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(iconRotateAnim, {
+          toValue: 1,
+          duration: 4000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(iconRotateAnim, {
+          toValue: 0,
+          duration: 4000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [fadeAnim, barWidthAnim, temperatureRangePercent, index, iconRotateAnim, iconFloatAnim, scaleAnim]);
 
   const handlePress = async () => {
     if (Platform.OS !== 'web') {
@@ -82,13 +105,14 @@ const DayCard = memo<DayCardProps>(({ day, theme, settings, onPress, convertTemp
     }
     Animated.sequence([
       Animated.timing(scaleAnim, {
-        toValue: 0.98,
-        duration: 100,
+        toValue: 0.96,
+        duration: 80,
         useNativeDriver: true,
       }),
-      Animated.timing(scaleAnim, {
+      Animated.spring(scaleAnim, {
         toValue: 1,
-        duration: 100,
+        friction: 5,
+        tension: 100,
         useNativeDriver: true,
       }),
     ]).start();
@@ -97,7 +121,7 @@ const DayCard = memo<DayCardProps>(({ day, theme, settings, onPress, convertTemp
 
   const iconRotation = iconRotateAnim.interpolate({
     inputRange: [0, 0.5, 1],
-    outputRange: ['-3deg', '3deg', '-3deg'],
+    outputRange: ['-2deg', '2deg', '-2deg'],
   });
 
   const barWidth = barWidthAnim.interpolate({
@@ -122,7 +146,7 @@ const DayCard = memo<DayCardProps>(({ day, theme, settings, onPress, convertTemp
             </View>
 
             <View style={styles.weatherInfo}>
-              <Animated.Text style={[styles.icon, { transform: [{ rotate: iconRotation }] }]}>
+              <Animated.Text style={[styles.icon, { transform: [{ rotate: iconRotation }, { translateY: iconFloatAnim }] }]}>
                 {weatherIcon}
               </Animated.Text>
               {day.precipitationProbability > 0 && (
